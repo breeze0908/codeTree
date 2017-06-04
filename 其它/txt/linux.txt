@@ -1,0 +1,1036 @@
+磁盘io查询相关：
+pidstat -d 1  #展示I/O统计，每秒更新一次
+iotop         #展示IO
+iotop -oP     #只显示有I/O行为的进程
+iostat -x 1   #磁盘io概况
+
+流量相关：
+sar -n DEV 1        #yum install sysstat
+sar -n TCP,ETCP 1
+nethogs				#查询实时流量  yum  -y  install nethogs
+iftop        
+
+内存相关：
+free -m
+ps H -eo pid,pcpu | sort -nk2 | tail  #查看占用cpu最高的pid
+
+cpu相关：
+mpstat -P ALL 1  #查看每个cpu相关情况
+dstat -c -y -l --proc-count --top-cpu   #显示一些关于CPU资源损耗的数据
+
+综合查询相关：
+vmstat 1
+top
+htop
+nmon
+uptime
+dmesg | tail   #系统信息
+pidstat 1 
+glances -t 2  #Glances 的默认刷新频率是 1 （秒）  yum install -y glances
+
+
+/etc/host.conf
+/etc/nsswitch.conf  dns配置文件，基本已经取代了host.conf
+/etc/my.cnf  mysql配置文件
+/etc/sysconfig/iptables  iptables配置文件
+/etc/security/limits.conf  limit配置文件
+/etc/security/limits.d/
+
+
+
+
+查看服务器是否在线  ping ip
+查看端口是否开启  ss -ln/netstat -tpln/telnet ip port
+查看防火墙 是否屏蔽服务
+查看hosts.allow
+
+磁盘是否满了
+inode节点用完了
+
+文件删除，空间未释放原因：文件被进程锁定或者有进程一直在向这个文件写数据
+一个文件在文件系统中存放为两部分：数据部分和指针部分，指针部分位于文件系统的meta-data中，在将数据删除后，这个指针就从meta-data中删除了，而数据部分存储在磁盘中。在将数据对应的指针从meta-data中清除后，文件数据部分占用的空间就可以被覆盖并写入新的内容。
+之所以出现在删除access.log文件后，空间还没释放，就是因为http进程还在一直向文件写入内容，导致虽然删除了access.log文件，但是由于进程锁定，文件对应的指针部分并未从meta-data中清楚。而由于指针并未删除，系统内核就认为文件并未删除，因此同df命令查询的时候并未释放也就不足为奇了。
+
+ulimit主要用来限制进程对资源的使用情况，支持各种类型的限制：
+内核文件大小的限制
+进程数据块的大小限制
+shell进程创建文件大小限制
+可加锁内存大小限制
+常住内存大小限制
+打开文件句柄数限制
+分配堆栈最大大小限制
+cpu占用时间限制
+用户最大可用的进程限制
+shell进程所能使用的最大虚拟内存限制
+
+配置文件/etc/security/limits.conf
+
+ulimit [options] [limit]
+
+-a  　显示目前资源限制的设定。 
+-c 　 设定core文件的最大值，单位为区块。 
+-d    <数据节区大小> 程序数据节区的最大值，单位为KB。 
+-f     <文件大小> shell所能建立的最大文件，单位为区块。 
+-H 　设定资源的硬性限制，也就是管理员所设下的限制。 
+-m    <内存大小> 指定可使用内存的上限，单位为KB。
+-n     <文件数目> 指定同一时间最多可开启的文件数。
+-p     <缓冲区大小> 指定管道缓冲区的大小，单位512字节。
+-s     <堆叠大小> 指定堆叠的上限，单位为KB。
+-S 　设定资源的弹性限制。 
+-t 　 指定CPU使用时间的上限，单位为秒。 
+-u    <程序数目> 用户最多可开启的程序数目。 
+-v    <虚拟内存大小>  指定可使用的虚拟内存上限，单位为KB。
+
+pssh/pdsh pdcp/mussh
+
+
+
+nginx 配置总结
+      命令总结
+
+keepalived - 虚拟冗余路由
+heartBeat       
+
+ssh-copy-id -i .ssh/id_rsa.pub user@server 复制ssh 公钥
+
+ 使用 lsof | grep deleted 查找被删除的文件
+
+cat ip.txt | xargs -n 1 -P 0 -I {}  wget -q -e http_proxy={} -O {} "http://url/to/file" &
+host misc.web.kankan.com 202.96.128.86 |awk '/has address/{print $4}' | xargs -n 1 -P 0 -I {} wget -q -e http_proxy={} -O {} "http://misc.web.kankan.com/www/v10/css/top_nav.css"
+md5sum *
+
+
+redis-cli -h 127.0.0.1 -p 6381 shutdown
+
+use admin
+db.shutdownServer();
+
+
+vim /etc/sysctl.conf
+vm.overcommit_memory = 0
+sysctl -p
+
+openssl rand -base64 14
+cat /dev/urandom | tr -dc "a-zA-Z0-9-" | fold  -w 15 | head
+
+机器迁移所需要迁移的内容：
+/etc/rc.local
+/etc/hosts
+/etc/hosts.allow
+/usr/local/
+/data/vhosts
+/var/spool/cron/*
+/etc/sysconfig/iptables
+
+pure-pw show username
+pure-pw userdel username
+pure-pw passwd username
+pure-pw useradd username -u 99 -g 99 -d /data/vhosts/
+pure-pw mkdb
+
+重启rsync
+service xinetd restart
+
+chattr -i /etc/passwd /etc/shadow
+useradd -u 99 -g 99 -o username
+passed username
+chattr +i /etc/passwd /etc/shadow
+
+yum install -y screen
+screen -list
+screen -dmS name
+screen -r name
+
+yum -y install supervisord --enablerepo=epel
+
+vim /etc/supervisord.conf 
+[program:elkpro_1]
+environment=LS_HEAP_SIZE=5000m
+directory=/opt/logstash
+command=/opt/logstash/bin/logstash -f /etc/logstash/pro1.conf -w 10 -l /var/log/logstash/pro1.log
+[program:elkpro_2]
+environment=LS_HEAP_SIZE=5000m
+directory=/opt/logstash
+command=/opt/logstash/bin/logstash -f /etc/logstash/pro2.conf -w 10 -l /var/log/logstash/pro2.log
+
+service supervisord start
+supervisorctl stop elkpro_2
+
+
+硬件 - 内核 - shell - 应用程序
+cat /etc/shells  / chsh -l 查看安装了哪些shell
+echo $SHELL 当前使用的shell
+yum install zsh
+which zsh  查看zsh路径
+chsh -s /bin/zsh  更改登录shell的类型（更改的是/etc/passwd里面的内容）
+
+shell变量 - 环境变了+自定义变量
+env  显示当前用户的环境变了,但是不会显示其自定义变量
+export 功能跟env一样,只不过该命令的输出是按变量名排序的
+declare
+显示当前shell中定义的所有变量,包括用户的环境变量和自定义变量,该命令的输出变量按变量名进行排序
+set 功能同declare
+
+echo $PATH
+export PATH=$PATH:/usr/local/monitor （export设置的变量成了环境变量）
+
+read -s -t 5 -p "input your name:" name （-t 指定时间内 -p提示语
+-s输入信息不显示）
+
+yum install tmux | apt-get install tmux | brew install tmux
+touch ~/.tmux.conf
+set -g prefix C-a
+unbind C-b
+bind r source-file ~/.tmux.conf \; display "Reload!"
+
+CTRL+B :
+source-file ~/.tmux.conf
+
+tmux new -s session 开启新的tmux
+tmux new -s session -d 后台开启新的tmux
+tmux ls  列出有哪些窗口
+tmux attach -t session 恢复窗口
+
+C-b ? 显示快捷键帮助
+C-b C-o 调换窗口位置，类似与vim 里的C-w
+C-b 空格键 采用下一个内置布局
+C-b ! 把当前窗口变为新窗口
+C-b “ 横向分隔窗口
+C-b % 纵向分隔窗口
+C-b q 显示分隔窗口的编号
+C-b o 跳到下一个分隔窗口
+C-b 上下键 上一个及下一个分隔窗口
+C-b C-方向键 调整分隔窗口大小
+C-b c 创建新窗口
+C-b 0~9 选择几号窗口
+C-b c 创建新窗口
+C-b n 选择下一个窗口
+C-b l 切换到最后使用的窗口
+C-b p 选择前一个窗口
+C-b w 以菜单方式显示及选择窗口
+C-b t 显示时钟
+C-b ; 切换到最后一个使用的面板
+C-b x 关闭面板
+C-b & 关闭窗口
+C-b s 以菜单方式显示和选择会话
+C-b d 退出tumx，并保存当前会话，这时，tmux仍在后台运行，可以通过tmux
+attach进入 到指定的会话
+
+alias vi='vim'
+alias
+alias vi
+unalias vi
+unalias -a 删除所有的别名
+永久添加别名
+vim .bashrc
+# alias
+if [ -f ~/.alias ];then
+ . ~/.alias
+if
+
+vim ~/.alias
+alias vi='vim'
+
+history
+.bash_history
+echo $HISTSIZE   内存中history命令个数
+echo $HISTFILESIZE 文件中的history命令个数
+echo $HISTFILE  历史命令保存的文件
+export HISTCONTROL=ignorespace  命令前有空格的 都不会记录到history里面
+export HISTIGNORE=*;COMMAND;export HISTIGNORE=; COMMAND不会记录到history里面
+
+find . -type f -size +40M -exec ls -h1 {} \ 删除大于40M以上的文件
+
+dd if=/dev/sda of=/root/sda.img 将sda磁盘备份到/root/sda.img文件中
+dd if=/dev/sda | gzip >/root/sda.img.gz  压缩
+dd if=/dev/sda | bzip2 >/root/sda.img.bz2  压缩
+bzip2 -dc /root/sda.img.bz2 | dd of=/dev/sdc
+dd if=/dev/mem of=/root/mem.img 备份内存中的数据
+dd if=/dev/zero bs=1024 count=1000000 of=/root/1Gb.file
+dd if=/root/1Gb.file bs=64 | dd of=/dev/null
+dd if=/dev/urandom of=/dev/sda 清除硬盘中的机密数据
+
+file a.txt
+
+ln -s source.file softsourcefile.txt
+ln -s sourceDir softsourceDir
+
+openssl enc -des3 -k 123 -in password.txt -out password.des3 (-k 指定密码 -in
+源文件 -out输出文件)
+openssl enc -des3 -d -in password.des3 -out password.txt （解密）
+openssl dgst -md5 test 计算test文件的md5值
+openssl dgst -sha1 test 计算文件的sha1值
+md5sum test 计算文件的md5值
+sha1sum test 计算文件的sha1值
+md5sum test* > test.md5
+md5sum -c test.md5 对比md5是否发生变化
+
+:s/a/b/g
+:1,$s/a/b/g
+
+paste file1 file2 file3
+paste -d '*' file1 file2 file3 默认是制表符,可以通过-d换成别的
+paste -d '*' -s file1 file2 file3
+每个文件先通过*拼接成一行,然后跟其他文件成为三行
+
+split -b 400M king_of_rimg.avi king_of_rimg_part
+-b 按多少字节进行拆分 也可以指定K M G等单位
+-l 指定行数拆分一个文件
+-a 默认的后缀长度
+-d 后缀用数字
+
+wc -l file 以行数来计数
+wc -c file 以字节来计数
+wc -w file 以单词来计数
+wc -m file 以字符来计数
+
+cut -b -3   截取1到3
+cut -b 3-   截取3到末尾
+-b 按字节定位
+-c 按字符定位
+-f 按域定位
+-d 默认间隔符是制表符TAB,可以指定其他的
+
+grep [选项] 字符 文件
+-n 显示行号
+-c 只展示有多少行
+-A 下面多少行也展示
+-B 上面多少行也展示
+-C -A -B的结合体
+-i 不区分大小写
+-w 对词的搜索
+
+sort -t ' ' -k 1.2 facebook.txt
+对第一咧的第二个字符开始到本行的最后一个字符为止的字符串来进行排序
+
+ssh-keygen  -t  rsa
+cat /root/.ssh/id_rsa.pub
+scp -r id_rsa.pub 10.0.0.188:/root/.ssh/authorized_keys
+
+zip -r zdata.zip mynote.txt soft/
+zip zdata.zip -d mynote.txt 删除压缩包中的文件
+unzip -d newdir/ zdata.zip  解压到指定目录
+unzip -v zdata.zip  不解压缩,只看有哪些数据
+unzip -t zdata.zip  验证压缩文件是否下载完全了
+
+tar -zxvf gzipfile.tar.gz
+tar -zcvf gzipfile.tar.gz curl-7.34.0
+z 标识用gzip解压缩或者压缩  -x 标识解压,-c标识压缩
+v 拆包或则压缩的时候直播整个过程
+f 标识要拆包的文件
+
+screen -ls
+screen -r name
+
+nslookup - 8.8.8.8 连接指定的DNS服务器 (etc/resolv.conf)
+nslookup -type=cname www.baidu.com
+nslookup www.baidu.com
+nslookup 进入交互模式
+>set all    显示dns服务器信息以及当前选项信息
+>set type=MAX  默认为A记录信息 更改为MAX
+>set debug
+>server 8.8.8.8 更改连上的DNS服务器地址
+>www.baidu.com
+
+
+dig @8.8.8.8 www.baidu.com A
+dig -t MAX www.baidu.com
+dig -x 193.0.14.129
+dig +tcp @8.8.8.8 www.baidu.com  默认是通过udp协议查询的
+dig +trace www.baidu.com
+dig +short www.baidu.com
+dig +nocmd +nocomment +nostat www.baidu.com
+
+nestat -lntp
+
+yum install iproute iproute-doc && rpm -qf /usr/sbin/ss
+netstat -a -> ss
+netstat -r -> ip route
+netstat -i -> ip -s link
+netstat -M -> ss
+netstat -g -> ip maddr
+ss -s 查看当前服务器的网络连接统计
+ss -l （ss -lp）查看所有打开的网络端口
+ss -a 查看所有的socket连接
+
+ifconfig -> ip link show
+ifconfig eth0 up   -> ip link set down eth0
+ifconfig eth0 down -> ip link set down eth0
+ip addr
+
+tcpdump
+
+
+
+nc -l 12345   监听12345端口
+nc 116.255.245.207 12345  连接116.255.245.207机器的12345端口
+nc -z -v -n -w 2 127.0.0.1 20-23
+-z 一旦建立连接马上断开,而不发送和接收任何数据
+-v 打印详细信息
+-n 直接使用ip地址,而不是用域名服务查询其域名
+-w 设置连接超时时间,单位为秒
+-u 使用udp建立连接,若无则采用tcp
+
+nc -v -l 12345 < book_out.txt   服务器发送数据到12345端口
+nc -v -n 116.255.245.207 12345 > book_out.txt
+客户端连接服务器12345端口获取数据导出
+
+传输文件夹
+tar -cvPF - /root/book |nc -l 12345
+nc -n 116.255.245.207 12345 | tar -xvPf -
+
+建立ssh信任
+ssh-keygen -t rsa
+ssh-copy-id "-p 22 name@machineB"
+
+rsync [参数] file machine:/root/file
+-t 将源文件的modify time同步到目标机器（会先对比两边文件时间戳和文件大小）
+-I 挨个文件发起文件同步,目的端的modified time总会被更新到当前时刻
+-v 让rsync输出更多的信息,增加越多的v,就可以获得越多的日志信息
+-r 递归同步数据
+-l rsync会保持软连接文件类型,原原本本的将软连接文件复制到目的端
+-P 保持权限（如果目的端没有文件,保持权限同步,如果有,权限不变）
+--delete 如果源没有此文件,那么目的端也别想有,删除之
+--delete-excluded 专门指定一些要在目的端删除的文件
+--delete-after
+(默认情况下,rsync是先清理目的端的文件再开始同步数据,如果使用此选项,rsync会先数据同步,再删除那些不需要清理的文件)
+
+wget http://www.baidu.com/baidu.jpg
+wget -r -X '' -X wukong,bajie ftp://localhost
+-X的作用是去处.wgetrc和/etc/wgetrc的作用,然后再使用-X wukong,bajie设置
+--execute robots=off 忽略robots.txt的封禁
+-nH 去掉域名那一层目录
+--cut-dirs=3 去掉三层目录
+-nd 实现平铺 不要文件夹
+-x 既 --force-directories 与 -nd 相反
+--protocol-directories 先创建一层协议名的文件夹
+-o 既 --output-file=logfile
+运行过程中输出到标准输出的内容都会被设置到logfile中
+-O 单独下载文件的时候,强制写入到所设置的文件中
+-c 断点续传
+--limit-rate=N 下载限速 20k
+-w 既 --wait=seconds 设置wget每两个请求之间间隔的秒数
+
+uptime
+top M 内存排序 P CPU排序 1打开各个cpu信息
+free [-m -g]
+
+
+当大量数据要从内存写入硬盘的时候,为了防止读写速度的巨大的差距而导致的时间等待,在内存中创造了叫做buffers的内存区域,数据不再直接缓慢的写入硬盘,而是先写入到buffers中,然后后台慢慢的写入到硬盘中
+cache呢.为了尽量减少内存从从磁盘读取数据的次数
+swap 交换分区 在内存不足的时候,更大限度的使用硬盘 （/proc/sys/vm/swappiness
+内存不足的界限）
+
+vmstat [-V] [-n] [delay [count]]
+-V表示打印出版本信息；
+-m 展示内存slabinfo
+-d 展示各个磁盘的统计信息
+-p /dev/sda1 展示特定分区的I/O信息
+-n表示在周期性循环输出时，输出的头部信息仅显示一次；
+delay是两次输出之间的延迟时间；
+count是指按照这个时间间隔统计的次数
+
+iostat[参数][时间][次数]
+-C 显示CPU使用情况
+-d 显示磁盘使用情况
+-k 以 KB 为单位显示
+-m 以 M 为单位显示
+-N 显示磁盘阵列(LVM) 信息
+-n 显示NFS 使用情况
+-p[磁盘] 显示磁盘和分区的情况
+-t 显示终端和CPU的信息
+-x 显示详细信息
+-V 显示版本信息
+
+sar -n DEV 1 3 查看网络接口性能信息
+sar 2 3 默认为显示cpu信息,每2s输出一次,共输出3次
+sar 2 3 -o op_info 保存到文件
+sar -f op_info 打开之前的结果
+sar -P ALL 1 1 打开所有的cpu信息
+
+
+mpstat -P ALL 1 (每隔一秒展示一次) 展示出每个cpu核的运行状态
+
+ping -f -c 1000 www.kankan.com
+ping -q -s 65500 -t 255 -c 3 -i 0.1 www.baidu.com
+-t 生存时间
+-c 次数
+-s 测试数据包大小 默认是64字节
+-q 只展示统计结果
+-i 每个数据包之间的时间间隔,只有root用户才能设置0.2s以下的间隔
+-f 以尽可能快的速度发送测试数据包
+
+pidof [-s] sshd -s代表显示一个
+pidof -x while.sh 跟进文件查找进程id
+
+lsof | grep file
+lsof /bin/bash     查找某个文件相关的进程
+lsof -u username   列出某个用户打开的文件信息
+lsof -c mysql      列出某个程序进程所打开的文件信息
+lsof  -u test -c mysql  列出某个用户以及某个进程所打开的文件信息
+lsof -p 11968     通过某个进程号显示该进程打开的文件
+lsof -i            列出所有的网络连接
+lsof -n -i tcp     列出所有tcp 网络连接信息
+lsof -i 4 -a -p 1234 列出被进程号为1234的进程所打开的所有IPV4 network files
+lsof -i @nf5260i5-td:20,21,80 -r 3
+列出目前连接主机nf5260i5-td上端口为：20，21，80相关的所有文件信息，且每隔3秒重复执行
+lsof -a -u test -i  列出某个用户的所有活跃的网络端口
+lsof -i :3306      列出谁在使用某个端口
+
+fuser -v /home/roc 所有打开/home/roc目录的进程
+fuser -v -n tcp 22 / fuser -v 22/tcp 哪些程序占用了22号端口
+
+ps aux
+ps aux -> ps -a -u x (如果不存在x用户,则跟aux一样)
+ps -ef
+ps -eo pid,user,start
+ps aux --sort -pcup （-pcpu +pcpu -pmem）
+ps axjf 树形结构显示进程 即展示子进程和父进程
+
+
+HUP 1  终端断线
+INT 2  中断     相当于CTRL+C组合键结束进程
+QUIT  3  退出   相当于组合CTRL+\
+TERM  15 终止
+KILL  9  强制终止
+CONT 18  继续（与STOP相反 fg bg命令）
+STOP 19  暂停（同组合键CTRL+z）
+
+kill -l 查看进程可以发出哪些信号
+kill -9 %1 杀死后台进程
+kill -0 pid  检测pid进程是否存在
+
+后台命令& : 让作业在后台运行
+CTRL+z   : 让作业转到后台并停止运行
+jobs     : 列出当前作业列表
+fg       : 将命令切换到前台并运行
+bg       : 将命令切换到后台并运行
+kill     : 终止一个作业
+
+nohup command > output.file 2>&1 &
+当前运行命令 + ctrl+z + bg %1 + disown -h %1
+setid command
+screen -A -m -d -S screen_ping command &  +  screen -list
+
+uname -a
+uname -v
+uname -r
+uname -m
+uname -i
+uname -o
+uname -n
+
+whoami   -  当前操作用户id
+who am i -  当初登录系统时候的用户id
+
+chkconfig --list ntpd
+chkconfig --level 35 ntpd on
+chkconfig ntpd off
+
+init 0 关机
+init 6 重启
+halt -w 不真关机,只是吧关机事件记录到/var/log/wtmp中
+halt -d 关机,但是不留下任何关机痕迹
+halt -p 关机并且关闭电源
+shutdown -h +15 15分钟后关机
+shutdown -h 23:00 23点关机
+shutdown -r now 立即重启
+shutdown -h now 立即关机
+reboot 重启系统
+poweroff 关机
+
+mkdir -p {0..9}{0..9}/{0..9}{0..9}
+mkdir -p {0..9}{0..9}/{0..9}{a..f}
+mkdir -p {0..9}{0..9}/{a..f}{0..9}
+mkdir -p {0..9}{0..9}/{a..f}{a..f}
+
+mkdir -p {0..9}{a..f}/{0..9}{0..9}
+mkdir -p {0..9}{a..f}/{0..9}{a..f}
+mkdir -p {0..9}{a..f}/{a..f}{0..9}
+mkdir -p {0..9}{a..f}/{a..f}{a..f}
+
+mkdir -p {0..9}{0..9}/{0..9}{0..9}
+mkdir -p {0..9}{0..9}/{0..9}{a..f}
+mkdir -p {0..9}{0..9}/{a..f}{0..9}
+mkdir -p {0..9}{0..9}/{a..f}{a..f}
+
+mkdir -p {a..f}{0..9}/{0..9}{0..9}
+mkdir -p {a..f}{0..9}/{0..9}{a..f}
+mkdir -p {a..f}{0..9}/{a..f}{0..9}
+mkdir -p {a..f}{0..9}/{a..f}{a..f}
+
+mkdir -p {a..f}{a..f}/{0..9}{0..9}
+mkdir -p {a..f}{a..f}/{0..9}{a..f}
+mkdir -p {a..f}{a..f}/{a..f}{0..9}
+mkdir -p {a..f}{a..f}/{a..f}{a..f}
+
+
+redis-cli keys interact* | xargs redis-cli del
+find . -name \*.c | xargs wc -l | tail -1 | awk '{print $1}' 统计代码行数
+
+function upload_avatar($userid, $file){
+	$ch = curl_init();
+	$data = array('userid' => $userid , 'uploadtype' => 'avatar','Filedata'=> '@'.$file);
+	curl_setopt($ch, CURLOPT_URL,"http://backend.t.kankan.com/image_new_client_tmp.json");
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_POST, 1);  
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+	$output=curl_exec($ch);	// 执行
+	curl_close($ch);			// 关闭cURL
+	return $output;
+}
+
+
+
+iptables
+-A RH-Firewall-1-INPUT -s 10.1.0.0/20 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 22 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A RH-Firewall-1-INPUT -s 116.7.233.118/32 -p tcp -m tcp --dport 3306 -j ACCEPT
+vim /etc/sysconfig/iptables
+service iptables restart
+
+
+P – 以 CPU 占用率大小的顺序排列进程列表
+M – 以内存占用率大小的顺序排列进程列表
+
+# host="183.60.209.103";for i in $host;do  curl
+# "http://${i}/a.json?a=hot&subid=493342&num=100&jsobj=hotObj" -H
+# "Host:point.api.t.kankan.com";echo;done;
+# redis-cli keys drama* |xargs redis-cli del
+# netstat -an  打印网络连接状况
+# netstat -lnp 但因当前系统启动哪些端口
+# watch -n 1 'ps -aux --sort -pmem, -pcpu' 通过watch实时监控
+# ab -c 10 -n 10000 http://www.baidu.com #ab压力测试 并发为10 次数为10000
+# mkdir -p /home/sly/test/hello/chile   一次性建立多级目录
+# truncate -s 1M file 创建特定大小的文件
+# cat /dev/urandom | tr -dc "a-zA-Z0-9-_\$\?~&@()" | fold  -w 30 | head  #随机生成长度为30的随机密码串命令
+# awk '{gsub("<[^>]*>", "")}1' file 清除所有html 标记
+# mkdir {1..100} 创建100个目录
+# ls *.jpg | grep -n "" | sed 's,.*,0000&,' | sed 's,0*\(...\):\(.*\).jpg,mv "\2.jpg" "image-\1.jpg",' | sh 重命名所有jpg文件，加上前缀和计数
+# cd <directory>; touch ./-i 保护目录不被rm -rf * 命令删除
+# for i in *.xml; do sed -i 's/foo/bar/g' "$i"; done 批量替换xml中关键字
+# du -kh --max-depth=1 | sort -n |head 获取大的目录
+#du -h --max-depth=2 /home/ 查看那个目录占用的比较高
+# mkdir -p {00..100}/{00..100}/{00..100}  正则建立目录
+# :3,5s/^/#/   注释3到5行
+# echo -n "string" | md5sum - 生成md5
+# :1,$d 清空文本文件
+# find . -type f -name "*.c" -exec cat {} \; | wc -l 统计代码行数
+# du -sh * | sort -n //统计当前目录大小 并安大小 排序 
+# /usr/local/rsync/bin/rsync -vzrtopg --timeout=240 --port=8873 /data/android.php root@10.10.10.10::backup/android.php --password-file=/usr/local/rsync/etc/rsync.secret
+-z来启用压缩
+-v是可视化
+-r是递归
+-a它保留了所有人和所属组、时间戳、软链接、权限
+--exclude-from=excluded  排除excluded目录
+--exclude={"/var/cache","/var/tmp"} 排除文件
+# find /tmp -mtime +10 -type f -name "*.log" -exec rm -f {} \;  自动删除指定日期之前的文件 {}为之前查找出来的文件，后面的\作为;的脱意符，否则shell会把分号作为该命令的结尾
+find ./*_bak -exec mv {} {}_bak \; 批量改名
+
+# :%s/<control-VM>//g 如何在vim清理^M
+# true && { echo success;} || { echo failed; }  
+
+
+
+
+
+
+find /var \! -atime -90  在/var目录下找出90天之内未被访问过的文件
+find /home -mtime +120   在/home目录下找出120天之前被修改过的文件
+find /usr -size +10M     在/usr目录下找出大小超过10MB的文件
+find . -name *keyword*   在当前目录查找文件名中包含"keyword"的文件
+find / -name *.conf     在根目录中查找文件名以".conf"结尾的文件
+find / -perm 777   在根目录中查找权限为"777"的文件
+find / -type d   在根目录中查找类型为"d"(目录)的文件
+find . -name "a*" -exec ls -l {}  \;    
+
+awk '{print $1,$4}' netstat.txt //打印出第一列第四列
+awk '{print %-8s,%-22s,$1,$4}' netstat.txt //格式化输出
+awk '$3==0 && $6=="LISTEN"' netstat.txt  //过滤记录，过滤条件为第三列的值为0，第六列的值为LISTEN
+awk '$3==0 && $6=="LISTEN" || NR==1' netstat.txt //过滤记录，过滤条件为第三列的值为0，第六列的值为LISTEN，再加上第一行
+awk '$3==0 && $6=="LISTEN" || NR==1 {print NR,FNR,$1,$4}' netstat.txt//加上行号
+awk '$3>0 {print $0}' netstat.txt //其他的过滤方式
+awk 'BEGIN{FS=":"} {print $1,$3,$6}' /etc/passwd //制定分隔符
+awk -F: '{print $1,$3,$6}' /etc/passwd //制定分隔符,同上
+awk -F '[;:]' '{print $1,$3,$6}' /etc/passwd //制定多个分隔符
+awk -F '[;:]' '{print $1,$3,$6}' OFS="\t" /etc/passwd//制定多个分隔符,制定\t作为输出分隔符
+awk '$6 ~ /FIN/ || NR==1 {print $1,$3,$6}' OFS="\t" netstat.txt //过滤第6列匹配FIN
+awk '$6 ~ /FIN|TIME/ || NR==1 {print $1,$3,$6}' OFS="\t" netstat.txt //过滤第6列匹配FIN或者TIME
+awk '$6 !~ /WAIT/ || NR==1 {print $1,$3,$6}' OFS="\t" netstat.txt //过滤第6列不匹配WAIT
+awk 'LISTEN' /etc/passwd 匹配含有LISTEN的行
+awk 'NR!=1 {print > $6}' netstat.txt //按照第六列拆分文件
+awk 'NR!=1 {print $4,$5> $6}' netstat.txt //按照第六列拆分文件
+
+
+
+
+
+
+
+文件管理
+	pwd — 打印出当前工作目录名
+	cd — 更改目录 (相对路径以及绝对路径)
+		cd	更改工作目录到你的家目录。
+		cd -	 更改工作目录到先前的工作目录。
+		cd ~user_name	 更改工作目录到用户家目录。例如, cd ~bob 会更改工作目录到用户“bob”的家
+	ls — 列出目录内容
+		选项	长选项	描述
+		-a	--all	    列出所有文件，甚至包括文件名以圆点开头的默认会被隐藏的隐藏文件。
+		-d	--directory	通常，如果指定了目录名，ls 命令会列出这个目录中的内容，而不是目录本身。 把这个选项与 -l 选项结合使用，可以看到所指定目录的详细信息，而不是目录中的内容。
+		-F	--classify	这个选项会在每个所列出的名字后面加上一个指示符。例如，如果名字是 目录名，则会加上一个'/'字符。
+		-h	--human-readable	当以长格式列出时，以人们可读的格式，而不是以字节数来显示文件的大小。
+		-l		        以长格式显示结果。
+		-r	--reverse	以相反的顺序来显示结果。通常，ls 命令的输出结果按照字母升序排列。
+		-S		        命令输出结果按照文件大小来排序。
+		-t		        按照修改时间来排序。
+	file — 确定文件类型
+	less — 浏览文件内容
+	cp — 复制文件和目录
+		cp item1 item2
+		-a, --archive	复制文件和目录，以及它们的属性，包括所有权和权限。 通常，复本具有用户所操作文件的默认属性。
+		-i, --interactive	在重写已存在文件之前，提示用户确认。如果这个选项不指定， cp 命令会默认重写文件。
+		-r, --recursive	递归地复制目录及目录中的内容。当复制目录时， 需要这个选项（或者-a 选项）。
+		-u, --update	当把文件从一个目录复制到另一个目录时，仅复制 目标目录中不存在的文件，或者是文件内容新于目标目录中已经存在的文件。
+		-v, --verbose	显示翔实的命令操作信息
+	mv — 移动/重命名文件和目录
+		mv item1 item2
+	mkdir — 创建目录
+		mkdir dir1
+		mkdir dir1 dir2 dir3
+		mkdir -p dir1/dir2/dir3
+	rmdir - 删除空目录	
+	rm — 删除文件和目录
+		-i, --interactive	在删除已存在的文件前，提示用户确认信息。 如果不指定这个选项，rm 会默默地删除文件
+		-r, --recursive	递归地删除文件，这意味着，如果要删除一个目录，而此目录 又包含子目录，那么子目录也会被删除。要删除一个目录，必须指定这个选项。
+		-f, --force	忽视不存在的文件，不显示提示信息。这选项颠覆了“--interactive”选项。
+		-v, --verbose	在执行 rm 命令时，显示翔实的操作信息。
+	ln — 创建硬链接和符号链接
+		ln file link  创建硬链接
+		ln -s item link   创建软连接
+	cat – 连接文件并且打印到标准输出
+	tac - 与cat一样，区别是先打印最后一行，然后倒数第二行。。
+	more - 查看内容
+	head - 查看内容
+    tail - 查看内容
+	sort – 给文本行排序
+	uniq – 报告或者省略重复行
+	cut – 从每行中删除文本区域
+	paste – 合并文件文本行
+	join – 基于某个共享字段来联合两个文件的文本行
+	comm – 逐行比较两个有序的文件
+	diff – 逐行比较文件
+	patch – 给原始文件打补丁
+	tr – 翻译或删除字符
+	sed – 用于筛选和转换文本的流编辑器
+	aspell – 交互式拼写检查器
+	wc - 统计文件
+		# wc -c filename：显示一个文件的字节数
+		# wc -m filename：显示一个文件的字符数
+		# wc -l filename：显示一个文件的行数
+		# wc -L filename：显示一个文件中的最长行的长度
+		# wc -w filename：显示一个文件的字数
+	
+	
+	which vi   查找文件
+	whereis ls 查找文件
+	locate     查找文件
+	find 
+		# find . -name abc                  想查看当前文件夹及子文件夹里有没有文件名为“abc”的文件
+		# find . -type d -name xyz          想查看当前文件夹及子文件夹里有没有”xyz”目录
+		# find . -name "*.txt"              想找出当前文件夹及子文件夹里所有后缀是”.txt”的文件
+		# find . -user roc                  想查找当前目录及其子文件夹中“roc”用户自己的文件有哪些
+		# find . -perm 755                  想查找当前文件夹及子文件夹里权限设定为755的所有文件
+		# find . -regex '.*b.*3′            查找当前文件夹及子文件夹里的同时含有b字符和3字符的文件：用到正则表达式技术
+		# find . -type f -name "*.abc" -exec cat {} \;  如果想全部输出用find命令查找出的”*.abc”文件的内容
+		# find . -amin -5                   查找当前目录下在5分钟内被访问过的文件, 在5分钟之内的用-5，在5分钟以上的用＋5
+		# find . -size +10000000c           查找当前目录及子目录下文件大小大于10M的所有文件
+		# find . -maxdepth 1 -name "*.c"    上述所有的find命令都是查找当前目录及其子目录。如果不想深入到子目录中，而是只查找当前一层目录
+		# find /var \! -atime -90  在/var目录下找出90天之内未被访问过的文件
+		# find /home -mtime +120   在/home目录下找出120天之前被修改过的文件
+		# find /usr -size +10M     在/usr目录下找出大小超过10MB的文件
+		# find . -name *keyword*   在当前目录查找文件名中包含"keyword"的文件
+		# find / -name *.conf     在根目录中查找文件名以".conf"结尾的文件
+		# find / -perm 777   在根目录中查找权限为"777"的文件
+		# find / -type d   在根目录中查找类型为"d"(目录)的文件
+		# find . -name "a*" -exec ls -l {}  \;    立即重启
+		# find . \( -name "*.txt" -o -name "*.pdf" \) -print   查找txt和pdf文件
+		# find . -regex  ".*\(\.txt|\.pdf\)$"   正则方式查找.txt和pdf
+		# find . ! -name "*.txt" -print   否定参数 ,查找所有非txt文本
+		# find . -maxdepth 1 -type f   指定搜索深度,打印出当前目录的文件（深度为1）
+		# find . -type f -name "*.swp" -delete
+	 grep [-acinv] [--color=auto] '搜寻字符串' filename
+		-a ：将 binary 文件以 text 文件的方式搜寻数据
+		-c ：计算找到 '搜寻字符串' 的次数
+		-i ：忽略大小写的不同，所以大小写视为相同
+		-n ：顺便输出行号
+		-v ：反向选择，亦即显示出没有 '搜寻字符串' 内容的那一行！
+		-A<显示行数>   --after-context=<显示行数>   #除了显示符合范本样式的那一列之外，并显示该行之后的内容。  
+		-B<显示行数>   --before-context=<显示行数>   #除了显示符合样式的那一行之外，并显示该行之前的内容。   
+		--color=auto ：可以将找到的关键词部分加上颜色的显示喔！
+	ln - 连接 
+		# ln source.txt hardsource.txt     创建硬连接，目录不能建立硬连接，只能建立软连接
+		# ln -s source.txt softsource      创建软连接
+文档打包压缩
+	# zip -r yasuo.zip abc.txt dir1    想把一个文件abc.txt和一个目录dir1压缩成为yasuo.zip
+	# unzip yasuo.zip                  解压缩
+	# unzip abc\?.zip                  当前目录下有abc1.zip，abc2.zip和abc3.zip，我想一起解压缩它们
+	# unzip -v large.zip               有一个很大的压缩文件large.zip，我不想解压缩，只想看看它里面有什么
+	# unzip -t large.zip               下载了一个压缩文件large.zip，想验证一下这个压缩文件是否下载完全了
+	# unzip -j music.zip               我用-v选项发现music.zip压缩文件里面有很多目录和子目录，并且子目录中其实都是歌曲mp3文件，我想把这些文件都下载到第一级目录，而不是一层一层建目录
+
+	# tar -xjvf roc.tar.bz2            解压，j选项表示采用bunzip2工具
+	# bzip2 abc.txt                    用bunzip2压缩工具进行压缩abc.txt  压缩后会得到一个压缩文件abc.txt.bz2，同时原abc.txt会被删除。 
+	# bzip2 abc1.txt abc2.txt          分别压缩   
+	# bzip five.bz2 abc1.txt abc2.txt abc3.txt dir1 dir2 将5个文件一起压缩
+	# bunzip2 abc.txt.bz2              解压缩abc.txt.bz2，解压后会得到abc.txt，而原abc.txt.bz2会被删除。
+	# bunzip2 abc1.txt.bz2 abc2.txt.bz2两个文件一起解压
+
+	# tar -xzvf abc.tar.gz 解压 ，后缀tar.gz和tgz基本没啥区别，相同的还有.taz和.tar.Z
+	# tar -xzvf abc.tgz
+	# gzip -d xyz.gz       d选项表示解压缩
+	# tar -czvf dirabc.tar.gz dirabc 将一个文件夹dirabc压缩成.tar.gz的压缩文件
+	# tar -ztvf abc.tar.gz  查看一下下载的abc.tar.gz压缩文件里包含哪些文件
+	# tar -xzvf abc.tar.gz def/xyz.txt   
+	# tar -xvf edf.tar     tar文件是归档文件，并未被压缩
+	# tar -xzvpf abc.tar.gz  解压abc.tar.gz时我想保留原来被压缩文件的权限（常用于备份）
+	# gzip -1 abc.tar      我想压缩得最快，代价是压缩比最高
+	x选项表示解压缩
+	z表示用gzip工具进行解压缩
+	v表示在解压缩时显示详细信息
+	f表示指定文件（请注意，这个选项一定要放在各个选项的最后哦～～，也就是要和所指定的文件名挨得最近哦）
+
+安装相关
+	rpm -ivh rpm_filename       安装rpm包
+		-i 表示安装
+		-v 表示可视化
+		-h 表示显示安装进度
+	rpm -e rpm_filename         卸载rpm包
+	rpm -qa |grep rpm_filename  查询包名
+	rpm -ql rpm_filename   列出一个rpm包的安装文件
+	rpm -qf filename.so   查询某个文件属于哪个rpm包
+	
+	yum update  更新yum资源
+	yum list 列出可用的yum资源
+	yum search keyword 搜索
+	yum install vim-X11 安装
+	yum remove vim-X11 卸载
+	
+磁盘相关
+	df - 查看磁盘
+		-i 标识查看inodes使用情况
+		-h 使用适合的单位显示
+		-k 使用KB为单位
+		-M 使用MB为单位
+	du - 查看文件占用大小
+		-s 只列出总和
+	　　-c 表示最后加总
+		-h 使用适合的单位显示
+	fdish - 分区
+	mount /dev/sdb5 /newdir/
+	unmount /newdir/ 
+	
+用户相关
+	useradd
+	userdel
+	passwd
+		#echo "ccc" | passwd --stdin lufei 非交互式设置密码
+	groupadd 
+	groupdel
+	sudo
+权限相关
+	chgrp
+	chown
+	chmod
+	umask
+	chattr
+	
+其他命令
+	clear － 清空屏幕
+	history － 显示历史列表内容
+		!!	重复最后一次执行的命令。可能按下上箭头按键和 enter 键更容易些。
+		!number	重复历史列表中第 number 行的命令。
+		!string	重复最近历史列表中，以这个字符串开头的命令。
+		!?string	重复最近历史列表中，包含这个字符串的命令。
+	alias - 创建命令别名	
+	shutdown
+		shutdown -h 10  十分钟后关机
+		shutdown -h now  立即关机
+		shutdown -h 23:25 系统会在23:25关机
+		shutdown -r now 立即重启
+		shutdown -r +10 十分钟后重启
+	reboot
+	halt 等同于 shutdown -h now 和poweroff
+	poweroff
+	
+键盘操作
+	Ctrl-a	移动光标到行首。
+	Ctrl-e	移动光标到行尾。
+	Ctrl-f	光标前移一个字符；和右箭头作用一样。
+	Ctrl-b	光标后移一个字符；和左箭头作用一样。
+	Alt-f	光标前移一个字。
+	Alt-b	光标后移一个字。
+	Ctrl-l	清空屏幕，移动光标到左上角。clear 命令完成同样的工作。
+
+	Ctrl-d	 删除光标位置的字符。
+	Ctrl-t	 光标位置的字符和光标前面的字符互换位置。
+	Alt-t	 光标位置的字和其前面的字互换位置。
+	Alt-l	 把从光标位置到字尾的字符转换成小写字母。
+	Alt-u	 把从光标位置到字尾的字符转换成大写字母。
+
+	Ctrl-k	 剪切从光标位置到行尾的文本。
+	Ctrl-u	 剪切从光标位置到行首的文本。
+	Alt-d	 剪切从光标位置到词尾的文本。
+	Alt-Backspace	 剪切从光标位置到词头的文本。如果光标在一个单词的开头，剪切前一个单词。
+	Ctrl-y	 把剪切环中的文本粘贴到光标位置。
+
+	Ctrl-p	移动到上一个历史条目。类似于上箭头按键。
+	Ctrl-n	移动到下一个历史条目。类似于下箭头按键。
+	Alt-<	 移动到历史列表开头。
+	Alt->	移动到历史列表结尾，即当前命令行。
+	Ctrl-r	反向递增搜索。从当前命令行开始，向上递增搜索。
+	Alt-p	反向搜索，不是递增顺序。输入要查找的字符串，然后按下 Enter，执行搜索。
+	Alt-n	 向前搜索，非递增顺序。
+	Ctrl-o	执行历史列表中的当前项，并移到下一个。如果你想要执行历史列表中一系列的命令，这很方便。
+其他命令
+	date - 时间
+		# date +%s
+		# date +%Y-%m-%d
+		# date +%Y%m%d         
+		# date +%Y%m%d --date="+1 day"  
+		# date +%Y%m%d --date="-1 day" 
+		# date +%Y%m%d --date="-1 month" 
+		# date +%Y%m%d --date="+1 month" 
+		# date +%Y%m%d --date="-1 year" 
+		# date +%Y%m%d --date="+1 year" 
+		# date -s //设置当前时间，只有root权限才能设置，其他只能查看。
+		# date -s 20080523 //设置成20080523，这样会把具体时间设置成空00:00:00
+		# date -s 01:01:01 //设置具体时间，不会对日期做更改
+		# date -s ″01:01:01 2008-05-23″ //这样可以设置全部时间
+		# date -s ″01:01:01 20080523″ //这样可以设置全部时间
+		# date -s ″2008-05-23 01:01:01″ //这样可以设置全部时间
+		# date -s ″20080523 01:01:01″ //这样可以设置全部时间
+		%n : 下一行
+		%t : 跳格
+		%H : 小时(00..23)
+		%I : 小时(01..12)
+		%k : 小时(0..23)
+		%l : 小时(1..12)
+		%M : 分钟(00..59)
+		%p : 显示本地 AM 或 PM
+		%r : 直接显示时间 (12 小时制，格式为 hh:mm:ss [AP]M)
+		%s : 从 1970 年 1 月 1 日 00:00:00 UTC 到目前为止的秒数
+		%S : 秒(00..61)
+		%T : 直接显示时间 (24 小时制)
+		%X : 相当于 %H:%M:%S
+		%Z : 显示时区 %a : 星期几 (Sun..Sat)
+		%A : 星期几 (Sunday..Saturday)
+		%b : 月份 (Jan..Dec)
+		%B : 月份 (January..December)
+		%c : 直接显示日期与时间
+		%d : 日 (01..31)
+		%D : 直接显示日期 (mm/dd/yy)
+		%h : 同 %b
+		%j : 一年中的第几天 (001..366)
+		%m : 月份 (01..12)
+		%U : 一年中的第几周 (00..53) (以 Sunday 为一周的第一天的情形)
+		%w : 一周中的第几天 (0..6)
+		%W : 一年中的第几周 (00..53) (以 Monday 为一周的第一天的情形)
+		%x : 直接显示日期 (mm/dd/yy)
+		%y : 年份的最后两位数字 (00.99)
+		%Y : 完整年份 (0000..9999)
+	netstat
+		-a (all)显示所有选项，默认不显示LISTEN相关
+		-t (tcp)仅显示tcp相关选项
+		-u (udp)仅显示udp相关选项
+		-n 拒绝显示别名，能显示数字的全部转化成数字。
+		-l 仅列出有在 Listen (监听) 的服務状态
+
+		-p 显示建立相关链接的程序名
+		-r 显示路由信息，路由表
+		-e 显示扩展信息，例如uid等
+		-s 按各个协议进行统计
+		-c 每隔一个固定时间，执行该netstat命令。
+	ifdown eth0
+	ifup eth0
+	chkconfig
+		chkconfig --list 
+		chkconfig --list |grep cron
+		chkconfig --level 345 crond off
+		chkconfig crond on 省略级别的话，默认为针对2345
+		chkconfig --del crond 
+		chkconfig --add crond 
+	watch - 监视ps aux 命令-n 1代表每一秒刷新一次 -d代表高亮显示变化的
+		# watch -n 1 -d 'ps aux'
+		# watch -n 1 -d "finger"
+	rsync - 同步文件
+		rsync [OPTION]... SRC DEST 
+	　　rsync [OPTION]... SRC [USER@]HOST:DEST 
+	　　rsync [OPTION]... [USER@]HOST:SRC DEST 
+	　　rsync [OPTION]... [USER@]HOST::SRC DEST 
+	　　rsync [OPTION]... SRC [USER@]HOST::DEST 
+	　　rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST] 
+	
+		-v, --verbose 详细模式输出 
+		-q, --quiet 精简输出模式 
+		-c, --checksum 打开校验开关，强制对文件传输进行校验 
+		-a, --archive 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD 
+		-r, --recursive 对子目录以递归模式处理 
+		-R, --relative 使用相对路径信息 
+		-b, --backup 创建备份，也就是对于目的已经存在有同样的文件名时，将老的文件重新命名为~filename。可以使用--suffix选项来指定不同的备份文件前缀。 
+		--backup-dir 将备份文件(如~filename)存放在在目录下。 
+		-suffix=SUFFIX 定义备份文件前缀 
+		-u, --update 仅仅进行更新，也就是跳过所有已经存在于DST，并且文件时间晚于要备份的文件。(不覆盖更新的文件) 
+		-l, --links 保留软链结 
+		-L, --copy-links 想对待常规文件一样处理软链结 
+		--copy-unsafe-links 仅仅拷贝指向SRC路径目录树以外的链结 
+		--safe-links 忽略指向SRC路径目录树以外的链结 
+		-H, --hard-links 保留硬链结 
+		-p, --perms 保持文件权限 
+		-o, --owner 保持文件属主信息 
+		-g, --group 保持文件属组信息 
+		-D, --devices 保持设备文件信息 
+		-t, --times 保持文件时间信息 
+		-S, --sparse 对稀疏文件进行特殊处理以节省DST的空间 
+		-n, --dry-run现实哪些文件将被传输 
+		-W, --whole-file 拷贝文件，不进行增量检测 
+		-x, --one-file-system 不要跨越文件系统边界 
+		-B, --block-size=SIZE 检验算法使用的块尺寸，默认是700字节 
+		-e, --rsh=COMMAND 指定使用rsh、ssh方式进行数据同步 
+		--rsync-path=PATH 指定远程服务器上的rsync命令所在路径信息 
+		-C, --cvs-exclude 使用和CVS一样的方法自动忽略文件，用来排除那些不希望传输的文件 
+		--existing 仅仅更新那些已经存在于DST的文件，而不备份那些新创建的文件 
+		--delete 删除那些DST中SRC没有的文件 
+		--delete-excluded 同样删除接收端那些被该选项指定排除的文件 
+		--delete-after 传输结束以后再删除 
+		--ignore-errors 及时出现IO错误也进行删除 
+		--max-delete=NUM 最多删除NUM个文件 
+		--partial 保留那些因故没有完全传输的文件，以是加快随后的再次传输 
+		--force 强制删除目录，即使不为空 
+		--numeric-ids 不将数字的用户和组ID匹配为用户名和组名 
+		--timeout=TIME IP超时时间，单位为秒 
+		-I, --ignore-times 不跳过那些有同样的时间和长度的文件 
+		--size-only 当决定是否要备份文件时，仅仅察看文件大小而不考虑文件时间 
+		--modify-window=NUM 决定文件是否时间相同时使用的时间戳窗口，默认为0 
+		-T --temp-dir=DIR 在DIR中创建临时文件 
+		--compare-dest=DIR 同样比较DIR中的文件来决定是否需要备份 
+		-P 等同于 --partial 
+		--progress 显示备份过程 
+		-z, --compress 对备份的文件在传输时进行压缩处理 
+		--exclude=PATTERN 指定排除不需要传输的文件模式 
+		--include=PATTERN 指定不排除而需要传输的文件模式 
+		--exclude-from=FILE 排除FILE中指定模式的文件 
+		--include-from=FILE 不排除FILE指定模式匹配的文件 
+		--version 打印版本信息 
+		--address 绑定到特定的地址 
+		--config=FILE 指定其他的配置文件，不使用默认的rsyncd.conf文件 
+		--port=PORT 指定其他的rsync服务端口 
+		--blocking-io 对远程shell使用阻塞IO 
+		-stats 给出某些文件的传输状态 
+		--progress 在传输时现实传输过程 
+		--log-format=formAT 指定日志文件格式 
+		--password-file=FILE 从FILE中得到密码 
+		--bwlimit=KBPS 限制I/O带宽，KBytes per second 
+		-h, --help 显示帮助信息
+	nohup commend &
+	screen -ls

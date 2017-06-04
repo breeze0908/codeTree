@@ -1,0 +1,134 @@
+lock table video.count_cache write,
+video.cp_extra write,
+video.cp_movie write,
+video.gz2010_china_golden write,
+video.gz2010_live write,
+video.gz2010_sports write,
+video.kankanpv_last2hours write,
+video.kankanpv_lastday write,
+video.kankanpv_lastweek write,
+video.kankanpv_lastweektmp write,
+video.kankanpv_today write,
+
+mysql -ppassword -e "show processlist"
+mysql -ppassword -e "show processlist"|grep SELECT|awk '{print $1}'|while read id;do mysql -ppassword -e "kill $id";done
+
+skip-grant-tables
+update mysql.user  set password=password('newpassword') where user='root'
+
+mysql数据库同步跳过临时错误
+slave stop;
+set GLOBAL SQL_SLAVE_SKIP_COUNTER=1;
+slave start;
+
+将远程服务器上的所有mysql数据库分别备份
+for I in $(mysql -e 'show databases' -u root --password=root -s --skip-column-names); do mysqldump -u root --password=root $I | gzip -c | ssh user@server.com "cat > /remote/$I.sql.gz"; done
+
+grant all on *.* to root@"10.26.%" identified by 'sd-9898w';
+flush  privileges;
+
+/usr/local/mysql/bin/mysqldump -uroot -ppassword movie -e --default-character-set=latin1 --add-drop-table -f   --all-databases
+
+truncate ugc_submovie
+
+php5.7默认密码过期：
+mysql里执行  SET GLOBAL default_password_lifetime = 0;
+配置文件里加 default_password_lifetime=0
+
+=========================================================
+
+show databases; 显示所有的数据库
+create database dbName; 创建数据库
+drop database dbName; 删除数据库
+
+CREATE TABLE tbName(
+	id INT,
+	name VARCHAR(20),
+	sex BOOLEAN,
+	subject VARCHAR(30),
+	INDEX(id),
+	UNIQUE INDEX index2_id(id ASC),
+	FULLTEXT INDEX index3_info(info),
+	INDEX index4_st(subject(10)),
+	INDEX index5_ns(name, sex)
+)ENGINE=MyISAM;
+SHOW CREATE TABLE tbName \G
+
+delimiter $ //设置SQL语句的分割符为$符
+
+mysql -h localhost -uroot -ppassword
+chown -R mysql.mysql /usr/local/mysql/data
+
+mysqladmin -p -u root shutdown  //关停正在运行的服务器
+mysqladmin -p -u root --protocol=tcp shutdown
+mysqladmin -p -u root -h 127.0.0.1 shutdown
+
+grant all privileges on *.* to root@10.1.1.67 identified by 'sd-9898w';flush privileges;
+select Host,User,Password from mysql.user
+set password for 'root'@'localhost' = PASSWORD('rootpass')
+update mysql.user set Password=PASSWORD('rootpass') where User='root';flush privileges;
+
+create user 'account'@'localhost' identified by 'password'
+drop user 'account'@'localhost'
+rename user account to new_account
+
+show grants for 'root'@'localhost'
+revoke all on *.* from 'root'@'localhost'
+revoke grants option on *.* from 'root'@'localhost'
+
+使用create创建索引
+1、创建普通索引 CREATE INDEX index7_id on tbName(id);
+2、创建唯一性索引 CREATE UNIQUE INDEX index_8_id ON tbName(id);
+3、创建全文索引 CREATE FULLTEXT INDEX index9_info ON tbName(info);
+4、创建单列索引 CREATE INDEX index10_addr ON tbName(address(4));
+5、创建多列索引 CREATE INDEX index11_na ON tbName(name, address);
+6、创建空间索引 CREATE SPATIAL INDEX index12_line on tbName(line);
+
+使用alter创建索引
+1、创建普通索引 ALTER TABLE tbName ADD INDEX index12_name(name(20));
+2、创建唯一性索引 ALTER TABLE tbName ADD UNIQUE INDEX index14_id(id);
+3、创建全文索引 ALTER TABLE tbName ADD FULLTEXT INDEX index15_info(info);
+4、创建单列索引 ALTER TABLE tbName ADD INDEX index16_addr(address(4));
+5、创建多列索引 ALTER TABLE tbName ADD INDEX index17_na(name, address);
+6、创建空间索引 ALTER TABLE tbName ADD SPATIAL INDEX index18_line(line);
+
+删除索引
+DROP INDEX 索引名 ON 表名;
+DROP INDEX id ON index1;
+
+修改表结构
+alter table tbName add columnName int(11) NOT NULL AUTO_INCREMENT;
+alter table tbName drop column columnName;
+alter table tbName modify columnName int(11) NOT NULL AUTO_INCREMENT;
+
+show variables like '%engine%'; 查看当前库的 engine
+show variables like 'storage_engine'; 查看当前库默认的 engine (my.ini: default- storage-engine= innodb)
+show variables like 'datadir' //查看mysql数据存储位置
+
+
+mysql>LOCK TABLE tbl_name READ; //以只读的方式锁表（允许读，不允许写）
+mysql>LOCK TABLE tbl_name WRITE; //以读写的方式锁表（允许读，不允许写）
+mysql>FLUSH TABLE tbl_name; //通知mysql服务器把挂起的改动写入硬盘
+mysql>UNLOCK TABLE; //接触对数据表的锁定
+mysql>FLUSH TABLE WITH READ LOCK;  //申请一个全局性的读操作所
+mysql>SET GLOBAL read_only = ON;
+mysql>SET GLOBAL read_only = OFF;
+mysql>UNLOCK TABLES;
+
+myisamchk /usr/local/mysql/var/database/tbl_name; //检查数据表
+myisamchk --recover /usr/local/mysql/var/database/tbl_name; //修复数据表
+
+
+
+
+
+
+mysql> repair table videos;   //修复表
+
+
+分析binlog日志
+/usr/local/mysql/bin/mysqlbinlog twin14467-bin.87970|head -n 80
+/usr/local/mysql/bin/mysqlbinlog twin14467-bin.87970|sed -n '80,90p'
+
+查看mysql连接数
+mysql -u root -p -N -e"show processlist\G;" | egrep "Host\:" | awk -F: '{ print $2 }' | sort | uniq -c

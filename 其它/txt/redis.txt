@@ -1,0 +1,777 @@
+#######String COMMAND
+#######Hash COMMAND
+#######List COMMAND
+#######Set COMMAND
+#######SprtSet COMMAND
+
+
+
+
+
+
+#######Key（键）COMMAND
+1、DEL key [key ...]
+删除给定的一个或多个 key 。
+redis> DEL name type website
+(integer) 3
+
+2、DUMP key
+序列化给定 key ，并返回被序列化的值，使用 RESTORE 命令可以将这个值反序列化为 Redis 键。
+redis> SET greeting "hello, dumping world!"
+OK
+redis> DUMP greeting
+"\x00\x15hello, dumping world!\x06\x00E\xa0Z\x82\xd8r\xc1\xde"
+redis> DUMP not-exists-key
+(nil)
+
+3、RESTORE key ttl serialized-value [REPLACE]
+反序列化给定的序列化值，并将它和给定的 key 关联。
+redis> SET greeting "hello, dumping world!"
+OK
+redis> DUMP greeting
+"\x00\x15hello, dumping world!\x06\x00E\xa0Z\x82\xd8r\xc1\xde"
+# 将序列化数据 RESTORE 到另一个键上面
+redis> RESTORE greeting-again 0 "\x00\x15hello, dumping world!\x06\x00E\xa0Z\x82\xd8r\xc1\xde"
+OK
+redis> GET greeting-again
+"hello, dumping world!"
+
+4、EXISTS key
+检查给定 key 是否存在。
+
+5、EXPIRE key seconds
+为给定 key 设置生存时间，当 key 过期时(生存时间为 0 )，它会被自动删除。
+redis> EXPIRE cache_page 30000   # 更新过期时间
+(integer) 1
+
+6、EXPIREAT key timestamp
+EXPIREAT 的作用和 EXPIRE 类似，都用于为 key 设置生存时间。
+不同在于 EXPIREAT 命令接受的时间参数是 UNIX 时间戳(unix timestamp)。
+
+7、PEXPIRE key milliseconds
+这个命令和 EXPIRE 命令的作用类似，但是它以毫秒为单位设置 key 的生存时间，而不像 EXPIRE 命令那样，以秒为单位。
+redis> PEXPIRE mykey 1500
+(integer) 1
+
+8、PEXPIREAT key milliseconds-timestamp
+这个命令和 EXPIREAT 命令类似，但它以毫秒为单位设置 key 的过期 unix 时间戳，而不是像 EXPIREAT 那样，以秒为单位。
+redis> PEXPIREAT mykey 1555555555005
+(integer) 1
+
+9、PERSIST key
+移除给定 key 的生存时间，将这个 key 从『易失的』(带生存时间 key )转换成『持久的』(一个不带生存时间、永不过期的 key )。
+redis> PERSIST mykey    # 移除 key 的生存时间
+(integer) 1
+
+10、PTTL key
+这个命令类似于 TTL 命令，但它以毫秒为单位返回 key 的剩余生存时间，而不是像 TTL 命令那样，以秒为单位。
+redis> PTTL key
+(integer) 6179
+
+11、TTL key
+以秒为单位，返回给定 key 的剩余生存时间(TTL, time to live)。
+redis> TTL key
+(integer) 10084
+
+12、KEYS pattern
+查找所有符合给定模式 pattern 的 key 。
+KEYS * 匹配数据库中所有 key 。
+KEYS h?llo 匹配 hello ， hallo 和 hxllo 等。
+KEYS h*llo 匹配 hllo 和 heeeeello 等。
+KEYS h[ae]llo 匹配 hello 和 hallo ，但不匹配 hillo 。
+特殊符号用 \ 隔开
+
+13、MOVE key db
+将当前数据库的 key 移动到给定的数据库 db 当中。
+redis> MOVE song 1                          # 将 song 移动到数据库 1
+(integer) 1
+
+14、RANDOMKEY
+从当前数据库中随机返回(不删除)一个 key 。
+redis> RANDOMKEY
+"fruit"
+
+15、RENAME key newkey
+将 key 改名为 newkey 。
+当 key 和 newkey 相同，或者 key 不存在时，返回一个错误。
+当 newkey 已经存在时， RENAME 命令将覆盖旧值。
+redis> RENAME message greeting
+OK
+
+16、RENAMENX key newkey
+当且仅当 newkey 不存在时，将 key 改名为 newkey 。
+当 key 不存在时，返回一个错误。
+redis> RENAMENX player best_player
+(integer) 1
+
+17、TYPE key
+返回 key 所储存的值的类型。
+redis> TYPE weather
+string
+
+18、SORT key [BY pattern] [LIMIT offset count] [GET pattern [GET pattern ...]] [ASC | DESC] [ALPHA] [STORE destination]
+返回或保存给定列表、集合、有序集合 key 中经过排序的元素。
+redis> SORT today_cost
+1) "1.5"
+2) "8"
+3) "10"
+4) "30"
+
+19、OBJECT subcommand [arguments [arguments]]
+OBJECT 命令允许从内部察看给定 key 的 Redis 对象。
+
+20、MIGRATE host port key destination-db timeout [COPY] [REPLACE]
+将 key 原子性地从当前实例传送到目标实例的指定数据库上，一旦传送成功， key 保证会出现在目标实例上，而当前实例上的 key 会被删除。
+
+21、SCAN cursor [MATCH pattern] [COUNT count]
+SCAN 命令及其相关的 SSCAN 命令、 HSCAN 命令和 ZSCAN 命令都用于增量地迭代（incrementally iterate）一集元素（a collection of elements）：
+SCAN 命令用于迭代当前数据库中的数据库键。
+SSCAN 命令用于迭代集合键中的元素。
+HSCAN 命令用于迭代哈希键中的键值对。
+ZSCAN 命令用于迭代有序集合中的元素（包括元素成员和元素分值）。
+
+
+
+
+
+
+
+
+
+
+
+#######Server（服务器）COMMAND
+1、TIME
+返回当前服务器时间。
+
+2、SYNC
+用于复制功能(replication)的内部命令。
+
+3、SLOWLOG subcommand [argument]
+Slow log 是 Redis 用来记录查询执行时间的日志系统。
+CONFIG SET slowlog-log-slower-than 1000    #让 slow log 记录所有查询时间大于等于 1000 微秒的查询
+CONFIG SET slowlog-max-len 1000            #让 slow log 最多保存 1000 条日志
+CONFIG GET slowlog-log-slower-than   #对执行时间大于多少微秒(microsecond，1秒 = 1,000,000 微秒)的查询进行记录。
+CONFIG GET slowlog-max-len           #查看设置
+redis> SLOWLOG GET
+1) 1) (integer) 12                      # 唯一性(unique)的日志标识符
+   2) (integer) 1324097834              # 被记录命令的执行时间点，以 UNIX 时间戳格式表示
+   3) (integer) 16                      # 查询执行时间，以微秒为单位
+   4) 1) "CONFIG"                       # 执行的命令，以数组的形式排列
+      2) "GET"                          # 这里完整的命令是 CONFIG GET slowlog-log-slower-than
+      3) "slowlog-log-slower-than"
+2) 1) (integer) 11
+   2) (integer) 1324097825
+   3) (integer) 42
+   4) 1) "CONFIG"
+      2) "GET"
+      3) "*"
+3) 1) (integer) 10
+   2) (integer) 1324097820
+   3) (integer) 11
+   4) 1) "CONFIG"
+      2) "GET"
+      3) "slowlog-log-slower-than"
+redis> SLOWLOG LEN                  #查看当前日志的数量
+(integer) 14
+redis> SLOWLOG RESET                #可以清空 slow log 。
+OK
+
+4、SLAVEOF host port
+SLAVEOF 命令用于在 Redis 运行时动态地修改复制(replication)功能的行为。
+SLAVEOF 127.0.0.1 6379  #当前服务器停止对旧主服务器的同步，丢弃旧数据集，转而开始对新主服务器进行同步。
+SLAVEOF NO ONE          #使得这个从属服务器关闭复制功能，并从从属服务器转变回主服务器，原来同步所得的数据集不会被丢弃。
+
+5、SHUTDOWN
+SHUTDOWN 命令执行以下操作：
+停止所有客户端
+如果有至少一个保存点在等待，执行 SAVE 命令
+如果 AOF 选项被打开，更新 AOF 文件
+关闭 redis 服务器(server)
+
+6、SAVE
+SAVE 命令执行一个同步保存操作，将当前 Redis 实例的所有数据快照(snapshot)以 RDB 文件的形式保存到硬盘。一般来说，在生产环境很少执行 SAVE 操作，因为它会阻塞所有客户端，保存数据库的任务通常由 BGSAVE 命令异步地执行。然而，如果负责保存数据的后台子进程不幸出现问题时， SAVE 可以作为保存数据的最后手段来使用。
+
+7、BGSAVE
+在后台异步(Asynchronously)保存当前数据库的数据到磁盘。
+BGSAVE 命令执行之后立即返回 OK ，然后 Redis fork 出一个新子进程，原来的 Redis 进程(父进程)继续处理客户端请求，而子进程则负责将数据保存到磁盘，然后退出。
+
+8、BGREWRITEAOF
+执行一个 AOF文件 重写操作。重写会创建一个当前 AOF 文件的体积优化版本。
+即使 BGREWRITEAOF 执行失败，也不会有任何数据丢失，因为旧的 AOF 文件在 BGREWRITEAOF 成功之前不会被修改。
+重写操作只会在没有其他持久化工作在后台执行时被触发，也就是说：
+如果 Redis 的子进程正在执行快照的保存工作，那么 AOF 重写的操作会被预定(scheduled)，等到保存工作完成之后再执行 AOF 重写。在这种情况下， BGREWRITEAOF 的返回值仍然是 OK ，但还会加上一条额外的信息，说明 BGREWRITEAOF 要等到保存操作完成之后才能执行。在 Redis 2.6 或以上的版本，可以使用 INFO 命令查看 BGREWRITEAOF 是否被预定。
+如果已经有别的 AOF 文件重写在执行，那么 BGREWRITEAOF 返回一个错误，并且这个新的 BGREWRITEAOF 请求也不会被预定到下次执行。
+
+9、PSYNC <MASTER_RUN_ID> <OFFSET>
+用于复制功能(replication)的内部命令。
+
+10、MONITOR
+实时打印出 Redis 服务器接收到的命令，调试用。
+127.0.0.1:6379> MONITOR
+OK
+# 以第一个打印值为例
+# 1378822099.421623 是时间戳
+# [0 127.0.0.1:56604] 中的 0 是数据库号码， 127... 是 IP 地址和端口
+# "PING" 是被执行的命令
+1378822099.421623 [0 127.0.0.1:56604] "PING"
+1378822105.089572 [0 127.0.0.1:56604] "SET" "msg" "hello world"
+1378822109.036925 [0 127.0.0.1:56604] "SET" "number" "123"
+1378822140.649496 [0 127.0.0.1:56604] "SADD" "fruits" "Apple" "Banana" "Cherry"
+1378822154.117160 [0 127.0.0.1:56604] "EXPIRE" "msg" "10086"
+1378822257.329412 [0 127.0.0.1:56604] "KEYS" "*"
+1378822258.690131 [0 127.0.0.1:56604] "DBSIZE"
+
+11、LASTSAVE
+返回最近一次 Redis 成功将数据保存到磁盘上的时间，以 UNIX 时间戳格式表示。
+redis> LASTSAVE
+(integer) 1324043588
+
+12、INFO [section]
+以一种易于解释（parse）且易于阅读的格式，返回关于 Redis 服务器的各种信息和统计数值。
+
+13、FLUSHDB
+清空当前数据库中的所有 key。
+
+14、FLUSHALL
+清空整个 Redis 服务器的数据(删除所有数据库的所有 key )。
+
+15、DBSIZE
+返回当前数据库的 key 的数量。
+
+16、DEBUG SEGFAULT
+执行一个不合法的内存访问从而让 Redis 崩溃，仅在开发时用于 BUG 模拟。
+
+17、DEBUG OBJECT key
+DEBUG OBJECT 是一个调试命令，它不应被客户端所使用。
+
+18、CONFIG SET parameter value
+CONFIG SET 命令可以动态地调整 Redis 服务器的配置(configuration)而无须重启。
+redis> CONFIG GET slowlog-max-len
+1) "slowlog-max-len"
+2) "1024"
+
+19、CONFIG GET parameter
+CONFIG GET 命令用于取得运行中的 Redis 服务器的配置参数(configuration parameters)，在 Redis 2.4 版本中， 有部分参数没有办法用 CONFIG GET 访问，但是在最新的 Redis 2.6 版本中，所有配置参数都已经可以用 CONFIG GET 访问了。
+redis> CONFIG GET s*
+1) "save"                       # 参数名：save
+2) "900 1 300 10 60 10000"      # save 参数的值
+3) "slave-serve-stale-data"     # 参数名： slave-serve-stale-data
+4) "yes"                        # slave-serve-stale-data 参数的值
+5) "set-max-intset-entries"     # ...
+6) "512"
+7) "slowlog-log-slower-than"
+8) "1000"
+9) "slowlog-max-len"
+10) "1000"
+
+20、CONFIG REWRITE
+CONFIG REWRITE 命令对启动 Redis 服务器时所指定的 redis.conf 文件进行改写： 因为 CONFIG SET 命令可以对服务器的当前配置进行修改， 而修改后的配置可能和 redis.conf 文件中所描述的配置不一样， CONFIG REWRITE 的作用就是通过尽可能少的修改， 将服务器当前所使用的配置记录到 redis.conf 文件中。
+127.0.0.1:6379> CONFIG GET appendonly           # appendonly 处于关闭状态
+1) "appendonly"
+2) "no"
+127.0.0.1:6379> CONFIG SET appendonly yes       # 打开 appendonly
+OK
+127.0.0.1:6379> CONFIG GET appendonly
+1) "appendonly"
+2) "yes"
+127.0.0.1:6379> CONFIG REWRITE                  # 将 appendonly 的修改写入到 redis.conf 中
+OK
+重写后的 redis.conf 文件中的 appendonly 选项将被改写：
+# ... 其他选项
+appendonly yes
+# ... 其他选项
+
+21、CONFIG RESETSTAT
+重置 INFO 命令中的某些统计数据，包括：
+Keyspace hits (键空间命中次数)
+Keyspace misses (键空间不命中次数)
+Number of commands processed (执行命令的次数)
+Number of connections received (连接服务器的次数)
+Number of expired keys (过期key的数量)
+Number of rejected connections (被拒绝的连接数量)
+Latest fork(2) time(最后执行 fork(2) 的时间)
+The aof_delayed_fsync counter(aof_delayed_fsync 计数器的值)
+
+22、CLIENT SETNAME connection-name
+为当前连接分配一个名字。
+这个名字会显示在 CLIENT LIST 命令的结果中， 用于识别当前正在与服务器进行连接的客户端。
+redis 127.0.0.1:6379> CLIENT SETNAME hello-world-connection
+OK
+redis 127.0.0.1:6379> CLIENT GETNAME
+"hello-world-connection"
+redis 127.0.0.1:6379> CLIENT SETNAME ""     # 必须双引号显示包围
+OK
+redis 127.0.0.1:6379> CLIENT GETNAME        # 清除完毕
+(nil)
+
+23、CLIENT GETNAME
+返回 CLIENT SETNAME 命令为连接设置的名字。
+redis 127.0.0.1:6379> CLIENT GETNAME
+"hello-world-connection"
+
+24、CLIENT LIST
+以人类可读的格式，返回所有连接到服务器的客户端信息和统计数据。
+
+25、CLIENT KILL ip:port
+关闭地址为 ip:port 的客户端。
+ip:port 应该和 CLIENT LIST 命令输出的其中一行匹配。
+
+################################PHP-redis中文文档###################################################################
+
+phpredis是php的一个扩展，效率是相当高有链表排序功能，对创建内存级的模块业务关系
+
+很有用;以下是redis官方提供的命令使用技巧:
+
+下载地址如下：
+
+https://github.com/owlient/phpredis（支持redis 2.0.4）
+
+
+Redis::__construct构造函数
+$redis = new Redis();
+
+connect, open 链接redis服务
+参数
+host: string，服务地址
+port: int,端口号
+timeout: float,链接时长 (可选, 默认为 0 ，不限链接时间)
+注: 在redis.conf中也有时间，默认为300
+
+pconnect, popen 不会主动关闭的链接
+参考上面
+
+setOption 设置redis模式
+
+getOption 查看redis设置的模式
+
+ping 查看连接状态
+
+get 得到某个key的值（string值）
+如果该key不存在，return false
+
+set 写入key 和 value（string值）
+如果写入成功，return ture
+
+setex 带生存时间的写入值
+$redis->setex('key', 3600, 'value'); // sets key → value, with 1h TTL.
+
+setnx 判断是否重复的，写入值
+$redis->setnx('key', 'value');
+$redis->setnx('key', 'value');
+
+delete  删除指定key的值
+返回已经删除key的个数（长整数）
+$redis->delete('key1', 'key2');
+$redis->delete(array('key3', 'key4', 'key5'));
+
+ttl
+得到一个key的生存时间
+
+persist
+移除生存时间到期的key
+如果key到期 true 如果不到期 false
+
+mset （redis版本1.1以上才可以用）
+同时给多个key赋值
+$redis->mset(array('key0' => 'value0', 'key1' => 'value1'));
+
+
+
+multi, exec, discard
+进入或者退出事务模式
+参数可选Redis::MULTI或Redis::PIPELINE. 默认是 Redis::MULTI
+Redis::MULTI：将多个操作当成一个事务执行
+Redis::PIPELINE:让（多条）执行命令简单的，更加快速的发送给服务器，但是没有任何原子性的保证
+discard:删除一个事务
+返回值
+multi()，返回一个redis对象，并进入multi-mode模式，一旦进入multi-mode模式，以后调用的所有方法都会返回相同的对象，只到exec(）方法被调用。
+
+watch, unwatch （代码测试后，不能达到所说的效果）
+监测一个key的值是否被其它的程序更改。如果这个key在watch 和 exec （方法）间被修改，这个 MULTI/EXEC 事务的执行将失败（return false）
+unwatch  取消被这个程序监测的所有key
+参数，一对key的列表
+$redis->watch('x');
+
+$ret = $redis->multi() ->incr('x') ->exec();
+
+
+subscribe *
+方法回调。注意，该方法可能在未来里发生改变
+
+publish *
+发表内容到某一个通道。注意，该方法可能在未来里发生改变
+
+exists
+判断key是否存在。存在 true 不在 false
+
+incr, incrBy
+key中的值进行自增1，如果填写了第二个参数，者自增第二个参数所填的值
+$redis->incr('key1');
+$redis->incrBy('key1', 10);
+
+decr, decrBy
+做减法，使用方法同incr
+
+getMultiple
+传参
+由key组成的数组
+返回参数
+如果key存在返回value，不存在返回false
+$redis->set('key1', 'value1'); $redis->set('key2', 'value2'); $redis->set('key3', 'value3'); $redis->getMultiple(array('key1', 'key2', 'key3'));
+$redis->lRem('key1', 'A', 2);
+$redis->lRange('key1', 0, -1);
+
+list相关操作
+lPush
+$redis->lPush(key, value);
+在名称为key的list左边（头）添加一个值为value的 元素
+
+rPush
+$redis->rPush(key, value);
+在名称为key的list右边（尾）添加一个值为value的 元素
+
+lPushx/rPushx
+$redis->lPushx(key, value);
+在名称为key的list左边(头)/右边（尾）添加一个值为value的元素,如果value已经存在，则不添加
+
+lPop/rPop
+$redis->lPop('key');
+输出名称为key的list左(头)起/右（尾）起的第一个元素，删除该元素
+
+blPop/brPop
+$redis->blPop('key1', 'key2', 10);
+lpop命令的block版本。即当timeout为0时，若遇到名称为key i的list不存在或该list为空，则命令结束。如果timeout>0，则遇到上述情况时，等待timeout秒，如果问题没有解决，则对keyi+1开始的list执行pop操作
+
+lSize
+$redis->lSize('key');
+返回名称为key的list有多少个元素
+
+lIndex, lGet
+$redis->lGet('key', 0);
+返回名称为key的list中index位置的元素
+
+lSet
+$redis->lSet('key', 0, 'X');
+给名称为key的list中index位置的元素赋值为value
+
+lRange, lGetRange
+$redis->lRange('key1', 0, -1);
+返回名称为key的list中start至end之间的元素（end为 -1 ，返回所有）
+
+lTrim, listTrim
+$redis->lTrim('key', start, end);
+截取名称为key的list，保留start至end之间的元素
+
+lRem, lRemove
+$redis->lRem('key', 'A', 2);
+删除count个名称为key的list中值为value的元素。count为0，删除所有值为value的元素，count>0从头至尾删除count个值为value的元素，count<0从尾到头删除|count|个值为value的元素
+
+lInsert
+在名称为为key的list中，找到值为pivot 的value，并根据参数Redis::BEFORE | Redis::AFTER，来确定，newvalue 是放在 pivot 的前面，或者后面。如果key不存在，不会插入，如果 pivot不存在，return -1
+$redis->delete('key1'); $redis->lInsert('key1', Redis::AFTER, 'A', 'X'); $redis->lPush('key1', 'A'); $redis->lPush('key1', 'B'); $redis->lPush('key1', 'C'); $redis->lInsert('key1', Redis::BEFORE, 'C', 'X');
+$redis->lRange('key1', 0, -1);
+$redis->lInsert('key1', Redis::AFTER, 'C', 'Y');
+$redis->lRange('key1', 0, -1);
+$redis->lInsert('key1', Redis::AFTER, 'W', 'value');
+
+rpoplpush
+返回并删除名称为srckey的list的尾元素，并将该元素添加到名称为dstkey的list的头部
+$redis->delete('x', 'y');
+$redis->lPush('x', 'abc'); $redis->lPush('x', 'def'); $redis->lPush('y', '123'); $redis->lPush('y', '456'); // move the last of x to the front of y. var_dump($redis->rpoplpush('x', 'y'));
+var_dump($redis->lRange('x', 0, -1));
+var_dump($redis->lRange('y', 0, -1)); 
+
+string(3) "abc" 
+array(1) { [0]=> string(3) "def" } 
+array(3) { [0]=> string(3) "abc" [1]=> string(3) "456" [2]=> string(3) "123" }
+
+SET操作相关
+sAdd
+向名称为key的set中添加元素value,如果value存在，不写入，return false
+$redis->sAdd(key , value);
+
+sRem, sRemove
+删除名称为key的set中的元素value
+$redis->sAdd('key1' , 'set1');
+$redis->sAdd('key1' , 'set2');
+$redis->sAdd('key1' , 'set3');
+$redis->sRem('key1', 'set2');
+
+sMove
+将value元素从名称为srckey的集合移到名称为dstkey的集合
+$redis->sMove(seckey, dstkey, value);
+
+sIsMember, sContains
+名称为key的集合中查找是否有value元素，有ture 没有 false
+$redis->sIsMember(key, value);
+
+sCard, sSize
+返回名称为key的set的元素个数
+
+sPop
+随机返回并删除名称为key的set中一个元素
+
+sRandMember
+随机返回名称为key的set中一个元素，不删除
+
+sInter
+求交集
+
+sInterStore
+求交集并将交集保存到output的集合
+$redis->sInterStore('output', 'key1', 'key2', 'key3')
+
+sUnion
+求并集
+$redis->sUnion('s0', 's1', 's2');
+s0,s1,s2 同时求并集
+
+sUnionStore
+求并集并将并集保存到output的集合
+$redis->sUnionStore('output', 'key1', 'key2', 'key3')；
+
+sDiff
+求差集
+
+sDiffStore
+求差集并将差集保存到output的集合
+
+sMembers, sGetMembers
+返回名称为key的set的所有元素
+
+sort
+排序，分页等
+参数
+'by' => 'some_pattern_*',
+'limit' => array(0, 1),
+'get' => 'some_other_pattern_*' or an array of patterns,
+'sort' => 'asc' or 'desc',
+'alpha' => TRUE,
+'store' => 'external-key'
+例子
+$redis->delete('s'); $redis->sadd('s', 5); $redis->sadd('s', 4); $redis->sadd('s', 2); $redis->sadd('s', 1); $redis->sadd('s', 3);
+var_dump($redis->sort('s')); // 1,2,3,4,5
+var_dump($redis->sort('s', array('sort' => 'desc'))); // 5,4,3,2,1
+var_dump($redis->sort('s', array('sort' => 'desc', 'store' => 'out'))); // (int)5
+ 
+string命令
+getSet
+返回原来key中的值，并将value写入key
+$redis->set('x', '42');
+$exValue = $redis->getSet('x', 'lol'); // return '42', replaces x by 'lol'
+$newValue = $redis->get('x')' // return 'lol'
+
+append
+string，名称为key的string的值在后面加上value
+$redis->set('key', 'value1');
+$redis->append('key', 'value2');
+$redis->get('key');
+
+getRange （方法不存在）
+返回名称为key的string中start至end之间的字符
+$redis->set('key', 'string value');
+$redis->getRange('key', 0, 5);
+$redis->getRange('key', -5, -1);
+
+setRange （方法不存在）
+改变key的string中start至end之间的字符为value
+$redis->set('key', 'Hello world');
+$redis->setRange('key', 6, "redis");
+$redis->get('key');
+
+strlen
+得到key的string的长度
+$redis->strlen('key');
+
+getBit/setBit
+返回2进制信息
+
+zset（sorted set）操作相关
+zAdd(key, score, member)：向名称为key的zset中添加元素member，score用于排序。如果该元素已经存在，则根据score更新该元素的顺序。
+$redis->zAdd('key', 1, 'val1');
+$redis->zAdd('key', 0, 'val0');
+$redis->zAdd('key', 5, 'val5');
+$redis->zRange('key', 0, -1); // array(val0, val1, val5)
+
+zRange(key, start, end,withscores)：返回名称为key的zset（元素已按score从小到大排序）中的index从start到end的所有元素
+$redis->zAdd('key1', 0, 'val0');
+$redis->zAdd('key1', 2, 'val2');
+$redis->zAdd('key1', 10, 'val10');
+$redis->zRange('key1', 0, -1); // with scores $redis->zRange('key1', 0, -1, true);
+
+zDelete, zRem
+zRem(key, member) ：删除名称为key的zset中的元素member
+$redis->zAdd('key', 0, 'val0');
+$redis->zAdd('key', 2, 'val2');
+$redis->zAdd('key', 10, 'val10');
+$redis->zDelete('key', 'val2');
+$redis->zRange('key', 0, -1); 
+
+zRevRange(key, start, end,withscores)：返回名称为key的zset（元素已按score从大到小排序）中的index从start到end的所有元素.withscores: 是否输出socre的值，默认false，不输出
+$redis->zAdd('key', 0, 'val0');
+$redis->zAdd('key', 2, 'val2');
+$redis->zAdd('key', 10, 'val10');
+$redis->zRevRange('key', 0, -1); // with scores $redis->zRevRange('key', 0, -1, true);
+
+zRangeByScore, zRevRangeByScore
+$redis->zRangeByScore(key, star, end, array(withscores， limit ));
+返回名称为key的zset中score >= star且score <= end的所有元素
+
+zCount
+$redis->zCount(key, star, end);
+返回名称为key的zset中score >= star且score <= end的所有元素的个数
+
+zRemRangeByScore, zDeleteRangeByScore
+$redis->zRemRangeByScore('key', star, end);
+删除名称为key的zset中score >= star且score <= end的所有元素，返回删除个数
+
+zSize, zCard
+返回名称为key的zset的所有元素的个数
+
+zScore
+$redis->zScore(key, val2);
+返回名称为key的zset中元素val2的score
+
+zRank, zRevRank
+$redis->zRevRank(key, val);
+返回名称为key的zset（元素已按score从小到大排序）中val元素的rank（即index，从0开始），若没有val元素，返回“null”。zRevRank 是从大到小排序
+
+zIncrBy
+$redis->zIncrBy('key', increment, 'member');
+如果在名称为key的zset中已经存在元素member，则该元素的score增加increment；否则向集合中添加该元素，其score的值为increment
+
+zUnion/zInter
+参数
+keyOutput
+arrayZSetKeys
+arrayWeights
+aggregateFunction Either "SUM", "MIN", or "MAX": defines the behaviour to use on duplicate entries during the zUnion.
+对N个zset求并集和交集，并将最后的集合保存在dstkeyN中。对于集合中每一个元素的score，在进行AGGREGATE运算前，都要乘以对于的WEIGHT参数。如果没有提供WEIGHT，默认为1。默认的AGGREGATE是SUM，即结果集合中元素的score是所有集合对应元素进行SUM运算的值，而MIN和MAX是指，结果集合中元素的score是所有集合对应元素中最小值和最大值。
+
+Hash操作
+hSet
+$redis->hSet('h', 'key1', 'hello');
+向名称为h的hash中添加元素key1—>hello
+
+hGet
+$redis->hGet('h', 'key1');
+返回名称为h的hash中key1对应的value（hello）
+
+hLen
+$redis->hLen('h');
+返回名称为h的hash中元素个数
+
+hDel
+$redis->hDel('h', 'key1');
+删除名称为h的hash中键为key1的域
+
+hKeys
+$redis->hKeys('h');
+返回名称为key的hash中所有键
+
+hVals
+$redis->hVals('h')
+返回名称为h的hash中所有键对应的value
+
+hGetAll
+$redis->hGetAll('h');
+返回名称为h的hash中所有的键（field）及其对应的value
+
+hExists
+$redis->hExists('h', 'a');
+名称为h的hash中是否存在键名字为a的域
+
+hIncrBy
+$redis->hIncrBy('h', 'x', 2);
+将名称为h的hash中x的value增加2
+
+hMset
+$redis->hMset('user:1', array('name' => 'Joe', 'salary' => 2000));
+向名称为key的hash中批量添加元素
+
+hMGet
+$redis->hmGet('h', array('field1', 'field2'));
+返回名称为h的hash中field1,field2对应的value
+
+redis 操作相关
+flushDB
+清空当前数据库
+
+flushAll
+清空所有数据库
+
+randomKey
+随机返回key空间的一个key
+$key = $redis->randomKey();
+
+select
+选择一个数据库
+move
+转移一个key到另外一个数据库
+$redis->select(0); // switch to DB 0
+$redis->set('x', '42'); // write 42 to x
+$redis->move('x', 1); // move to DB 1
+$redis->select(1); // switch to DB 1
+$redis->get('x'); // will return 42
+
+rename, renameKey
+给key重命名
+$redis->set('x', '42');
+$redis->rename('x', 'y');
+$redis->get('y'); // → 42
+$redis->get('x'); // → `FALSE`
+
+renameNx
+与remane类似，但是，如果重新命名的名字已经存在，不会替换成功
+
+setTimeout, expire
+设定一个key的活动时间（s）
+$redis->setTimeout('x', 3);
+
+expireAt
+key存活到一个unix时间戳时间
+$redis->expireAt('x', time() + 3);
+
+keys, getKeys
+返回满足给定pattern的所有key
+$keyWithUserPrefix = $redis->keys('user*');
+
+dbSize
+查看现在数据库有多少key
+$count = $redis->dbSize();
+
+auth
+密码认证
+$redis->auth('foobared');
+
+bgrewriteaof
+使用aof来进行数据库持久化
+$redis->bgrewriteaof();
+
+slaveof
+选择从服务器
+$redis->slaveof('10.0.1.7', 6379);
+
+save
+将数据同步保存到磁盘
+
+bgsave
+将数据异步保存到磁盘
+
+lastSave
+返回上次成功将数据保存到磁盘的Unix时戳
+
+info
+返回redis的版本信息等详情
+
+
+
+type
+返回key的类型值
+string: Redis::REDIS_STRING
+set: Redis::REDIS_SET
+list: Redis::REDIS_LIST
+zset: Redis::REDIS_ZSET
+hash: Redis::REDIS_HASH
+other: Redis::REDIS_NOT_FOUND

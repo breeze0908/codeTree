@@ -1,0 +1,50 @@
+npm install -g node-gyp
+npm install -g socket.io  #mac下面报错时加sudo 
+npm install -g nodeppt
+如果是html的的话：http://127.0.0.1:8080/index.html
+如果是mrakdown的话：http://127.0.0.1:8080/md/index.md
+
+
+
+github地址：https://github.com/ksky521/nodePPT
+nodeppt start （http://127.0.0.1:8080/）
+nodeppt start -p 8090 -d path/for/ppts 
+nodeppt start -p 8080 -d path/for/ppts -h 127.0.0.1 
+nodeppt start -h # 获取帮助 
+
+
+
+通过[slide]作为每页ppt的间隔,如果需要添加单页背景，使用下面的语法：
+[slide style="background-image:url('/img/bg1.png')"]
+
+单页ppt上下布局
+[slide] 
+## 主页面样式 
+### 
+----是上下分界线 
+---- 
+nodeppt是基于nodejs写的支持 **Markdown!** 语法的网页PPT 
+
+
+在md文件，顶部 配置 可以设置全局转场动画，如果要设置单页的转场动画，可以通过下面的语法
+[slide data-transition="vertical3d"]
+## 这是一个vertical3d的动画
+
+
+表格实例
+### 市面上主要的css预处理器：lesssassstylus
+ ---  
+|less| sass | stylus 
+:-------|:------:|-------:|-------- 
+环境 |js/nodejs | Ruby | nodejs 
+扩展名 | .less | .sass/.scss | .styl 
+特点 | 老牌，用户多，支持js解析 | 功能全，有成型框架，发展快 | 语法多样，小众 
+案例/框架 | [Bootstrap](http://getbootstrap.com/) | [compass](http://compass-style.org) [bourbon](http://bourbon.io) |
+
+
+插入iframe,使用data-src作为iframe的url，这样只有切换到当前页才会加载url内容~
+<iframe data-src="http://www.baidu.com" src="about:blank;"></iframe>
+
+
+
+

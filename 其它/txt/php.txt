@@ -1,0 +1,72 @@
+ini_set('default_socket_timeout', -1);
+ini_set('memory_limit', -1);
+ini_set('error_reporting', E_ALL | E_STRICT);
+ini_set('display_errors', 'On');
+ini_set('log_errors', 'Off');
+ini_set('date.timezone','Asia/Shanghai');
+error_reporting(7);
+set_time_limit(0);
+ignore_user_abort();//关闭浏览器，PHP后台继续运行
+
+
+
+
+register_shutdown_function('fatalError');
+set_error_handler('appError');
+set_exception_handler('appException');
+function error_record($number, $string, $file, $line, $context){
+	$errors = array('2'    =>  'E_WARNING',
+					'8'    =>  'E_NOTICE',
+					'256'  =>  'E_USER_ERROR',
+					'512'  =>  'E_USER_WARNING',
+					'1024' =>  'E_USER_NOTICE',	
+					'4096' =>  'E_RECOVERABLE_ERROR',
+					'8191' =>  'E_ALL',					
+	);
+	$error_type = isset($errors[$number]) ? $errors[$number] : '';
+	$str = "\n********************** PHP ERROR INFO **********************\n";
+	$error  = "Number: $number $error_type\n";
+	$error .= "errInfo: $string\n";
+	$error .= "File:   $file\n";
+	$error .= "Line:   $line\n";
+	$error .= "Time:   ".date('Y-m-d H:i:s')."\n\n";
+	//$error .= "Context:\n" . print_r($context, TRUE) . "\n\n";
+	error_log($str.$error, 3, __ERROR_LOG__);
+	if(__DEBUG__){
+		echo nl2br($str.$error);
+	}
+	exit();
+}
+function appError($number, $string, $file, $line, $context){
+	error_record($number, $string, $file, $line, $context);
+}
+function fatalError(){
+	if ($e = error_get_last()) {
+		switch($e['type']){
+		  case E_ERROR:
+		  case E_PARSE:
+		  case E_CORE_ERROR:
+		  case E_COMPILE_ERROR:
+		  case E_USER_ERROR:  
+		    Smarty::muteExpectedErrors();
+			error_record($e['type'], $e['message'], $e['file'], $e['line'], '');
+			break;
+		}
+	}
+}
+
+function appException($e) {
+	$error = array();
+	$error['message']   =   $e->getMessage();
+	$error['code']      =   $e->getCode();
+	$trace              =   $e->getTrace();
+	if('E'==$trace[0]['function']) {
+		$error['file']  =   $trace[0]['file'];
+		$error['line']  =   $trace[0]['line'];
+	}else{
+		$error['file']  =   $e->getFile();
+		$error['line']  =   $e->getLine();
+	}
+	$error['trace']     =   $e->getTraceAsString();
+	error_record($error['code'], $error['message'], $error['file'], $error['line'], '');
+}
