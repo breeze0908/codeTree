@@ -1,27 +1,26 @@
-
 /**
  *  事件处理工具
  * @type Object
  */
 Tool.Event = {
-    add : function(elm, evType, fn, useCapture){
+    add: function(elm, evType, fn, useCapture) {
         useCapture = (useCapture) ? true : false;
         if (elm.addEventListener) {
             elm.addEventListener(evType, fn, useCapture);
             return true;
-        }else if (elm.attachEvent) {
+        } else if (elm.attachEvent) {
             var r = elm.attachEvent('on' + evType, fn);
             return r;
-        }else {
+        } else {
             elm['on' + evType] = fn;
         }
     },
-    remove : function(elm,evType,fn){
-        if (elm.detachEvent){
-            elm.detachEvent('on'+evType,fn);
-        }else if (elm.removeEventListener){
+    remove: function(elm, evType, fn) {
+        if (elm.detachEvent) {
+            elm.detachEvent('on' + evType, fn);
+        } else if (elm.removeEventListener) {
             elm.removeEventListener(evType, fn, false);
-        }else{
+        } else {
             elm['on' + evType] = null;
         }
     }
@@ -50,37 +49,35 @@ MiniSite.Browser = MiniSite.Browser || {
  * @param {String} sCharset
  * @param {Function} fCallback
  */
-MiniSite.loadJSData = MiniSite.loadJSData || function( sUrl, sCharset, fCallback ){
+MiniSite.loadJSData = MiniSite.loadJSData || function(sUrl, sCharset, fCallback) {
     var _script = document.createElement('script');
     _script.setAttribute('charset', sCharset);
     _script.setAttribute('type', 'text/javascript');
     _script.setAttribute('src', sUrl);
     document.getElementsByTagName('head')[0].appendChild(_script);
-    if(MiniSite.Browser.ie){
-        _script.onreadystatechange = function(){
-            if(this.readyState === 'loaded' || this.readyState === 'complete'){
-                setTimeout(function(){
-                    try{
+    if (MiniSite.Browser.ie) {
+        _script.onreadystatechange = function() {
+            if (this.readyState === 'loaded' || this.readyState === 'complete') {
+                setTimeout(function() {
+                    try {
                         fCallback();
-                    }catch(e){}
+                    } catch (e) {}
                 }, 50);
             }
         };
-    }else if(MiniSite.Browser.moz){
-        _script.onload = function(){
-            setTimeout(function(){
-                try{
+    } else if (MiniSite.Browser.moz) {
+        _script.onload = function() {
+            setTimeout(function() {
+                try {
                     fCallback();
-                }catch(e){}
+                } catch (e) {}
             }, 50);
         };
-    }else{
-        setTimeout(function(){
-            try{
+    } else {
+        setTimeout(function() {
+            try {
                 fCallback();
-            }catch(e){}
+            } catch (e) {}
         }, 50);
     }
 };
-
-

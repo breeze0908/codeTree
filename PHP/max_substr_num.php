@@ -5,18 +5,17 @@
 
 //f(x) = max(f(x-1)+a(x)), a(x));
 
-
 //只计算最长子串的和
 function maxSubNum($array) {
-	$sum = 0; 
-	$max = 0;	
-	for($i = 0; $i < count($array); $i++){
+	$sum = 0;
+	$max = 0;
+	for ($i = 0; $i < count($array); $i++) {
 		$sum = $sum + $array[$i];
-		if($sum > $max) {
+		if ($sum > $max) {
 			$max = $sum;
 		}
 
-		if($sum < 0){
+		if ($sum < 0) {
 			$sum = 0; //重新从0开始相加
 		}
 	}
@@ -25,49 +24,46 @@ function maxSubNum($array) {
 
 //计算最长子串
 function maxSubArr($array) {
-	$sum = 0; 
-	$max = 0;
-	$maxArr = array();
-	for($i = 0; $i < count($array); $i++){
+	$sum    = 0;
+	$max    = 0;
+	$maxArr = [];
+	for ($i = 0; $i < count($array); $i++) {
 		$sum = $sum + $array[$i];
-		if($sum > $max) {
+		if ($sum > $max) {
 			$max = $sum;
 		}
 
-		if($sum < 0){
-			$sum = 0; //重新从0开始相加
-			$maxArr = array();
-		}else{
+		if ($sum < 0) {
+			$sum    = 0; //重新从0开始相加
+			$maxArr = [];
+		} else {
 			array_push($maxArr, $array[$i]);
 		}
 	}
 	return $maxArr;
 }
 
-
 //穷举法
-function getMaxSubStrNum($array){
+function getMaxSubStrNum($array) {
 	$max = $array[0];
-	for($i = 0; $i < count($array); $i++) {
+	for ($i = 0; $i < count($array); $i++) {
 		$sum = $array[$i];
 
-		for($j = $i+1; $j < count($array); $j++) {
+		for ($j = $i + 1; $j < count($array); $j++) {
 			$sum = $sum + $array[$j];
-			if($sum > $max) {
-				$max = $sum;
-				$start = $i;    //子串数组开始的地方
-				$end = $j;  	//子串结束的地方
+			if ($sum > $max) {
+				$max   = $sum;
+				$start = $i; //子串数组开始的地方
+				$end   = $j; //子串结束的地方
 			}
 		}
 	}
 
-	
 	//print_r(array_slice($array,$start,$end-$start+1));
 	return $max;
 }
 
-
-$array = [1, -2, -1, 26, 0 , 13, 0, -2, 6];
+$array = [1, -2, -1, 26, 0, 13, 0, -2, 6];
 print_r($array);
 $c1 = maxSubNum($array);
 var_dump($c1);

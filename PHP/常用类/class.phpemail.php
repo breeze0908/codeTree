@@ -1,249 +1,237 @@
 <?php
 class MySendMail {
 	/**
-	* @var string 邮件传输代理用户名
-	* @access private
-	*/
+	 * @var string 邮件传输代理用户名
+	 * @access private
+	 */
 	private $_userName;
 
 	/**
-	* @var string 邮件传输代理密码
-	* @access private
-	*/
+	 * @var string 邮件传输代理密码
+	 * @access private
+	 */
 	private $_password;
 
 	/**
-	* @var string 邮件传输代理服务器地址
-	* @access private
-	*/
+	 * @var string 邮件传输代理服务器地址
+	 * @access private
+	 */
 	private $_sendServer;
 
 	/**
-	* @var int 邮件传输代理服务器端口
-	* @access private
-	*/
+	 * @var int 邮件传输代理服务器端口
+	 * @access private
+	 */
 	private $_port;
 
 	/**
-	* @var string 发件人
-	* @access protected
-	*/
+	 * @var string 发件人
+	 * @access protected
+	 */
 	protected $_from;
 
 	/**
-	* @var string 收件人
-	* @access protected
-	*/
+	 * @var string 收件人
+	 * @access protected
+	 */
 	protected $_to;
 
 	/**
-	* @var string 抄送
-	* @access protected
-	*/
+	 * @var string 抄送
+	 * @access protected
+	 */
 	protected $_cc;
 
 	/**
-	* @var string 秘密抄送
-	* @access protected
-	*/
+	 * @var string 秘密抄送
+	 * @access protected
+	 */
 	protected $_bcc;
 
 	/**
-	* @var string 主题
-	* @access protected
-	*/
+	 * @var string 主题
+	 * @access protected
+	 */
 	protected $_subject;
 
 	/**
-	* @var string 邮件正文
-	* @access protected
-	*/
+	 * @var string 邮件正文
+	 * @access protected
+	 */
 	protected $_body;
 
 	/**
-	* @var string 附件
-	* @access protected
-	*/
+	 * @var string 附件
+	 * @access protected
+	 */
 	protected $_attachment;
 
 	/**
-	* @var reource socket资源
-	* @access protected
-	*/
+	 * @var reource socket资源
+	 * @access protected
+	 */
 	protected $_socket;
 
 	/**
-	* @var reource 是否是安全连接
-	* @access protected
-	*/
+	 * @var reource 是否是安全连接
+	 * @access protected
+	 */
 	protected $_isSecurity;
 
 	/**
-	* @var string 错误信息
-	* @access protected
-	*/
+	 * @var string 错误信息
+	 * @access protected
+	 */
 	protected $_errorMessage;
 
 	/**
-	* 设置邮件传输代理，如果是可以匿名发送有邮件的服务器，只需传递代理服务器地址就行
-	* @access public
-	* @param string $server 代理服务器的ip或者域名
-	* @param string $username 认证账号
-	* @param string $password 认证密码
-	* @param int $port 代理服务器的端口，smtp默认25号端口
-	* @param boolean $isSecurity 到服务器的连接是否为安全连接，默认false
-	* @return boolean
-	*/
-	public function setServer($server, $username="", $password="", $port=25, $isSecurity=false) {
+	 * 设置邮件传输代理，如果是可以匿名发送有邮件的服务器，只需传递代理服务器地址就行
+	 * @access public
+	 * @param string $server 代理服务器的ip或者域名
+	 * @param string $username 认证账号
+	 * @param string $password 认证密码
+	 * @param int $port 代理服务器的端口，smtp默认25号端口
+	 * @param boolean $isSecurity 到服务器的连接是否为安全连接，默认false
+	 * @return boolean
+	 */
+	public function setServer($server, $username = "", $password = "", $port = 25, $isSecurity = false) {
 		$this->_sendServer = $server;
-		$this->_port = $port;
+		$this->_port       = $port;
 		$this->_isSecurity = $isSecurity;
-		$this->_userName = empty($username) ? "" : base64_encode($username);
-		$this->_password = empty($password) ? "" : base64_encode($password);
+		$this->_userName   = empty($username) ? "" : base64_encode($username);
+		$this->_password   = empty($password) ? "" : base64_encode($password);
 		return true;
 	}
 
 	/**
-	* 设置发件人
-	* @access public
-	* @param string $from 发件人地址
-	* @return boolean
-	*/
+	 * 设置发件人
+	 * @access public
+	 * @param string $from 发件人地址
+	 * @return boolean
+	 */
 	public function setFrom($from) {
 		$this->_from = $from;
 		return true;
 	}
 
 	/**
-	* 设置收件人，多个收件人，调用多次.
-	* @access public
-	* @param string $to 收件人地址
-	* @return boolean
-	*/
+	 * 设置收件人，多个收件人，调用多次.
+	 * @access public
+	 * @param string $to 收件人地址
+	 * @return boolean
+	 */
 	public function setReceiver($to) {
-		if(isset($this->_to)) {
-			if(is_string($this->_to)) {
-				$this->_to = array($this->_to);
+		if (isset($this->_to)) {
+			if (is_string($this->_to)) {
+				$this->_to   = [$this->_to];
 				$this->_to[] = $to;
 				return true;
-			}
-			elseif(is_array($this->_to)) {
+			} elseif (is_array($this->_to)) {
 				$this->_to[] = $to;
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
-		}
-		else {
+		} else {
 			$this->_to = $to;
 			return true;
 		}
 	}
 
 	/**
-	* 设置抄送，多个抄送，调用多次.
-	* @access public
-	* @param string $cc 抄送地址
-	* @return boolean
-	*/
+	 * 设置抄送，多个抄送，调用多次.
+	 * @access public
+	 * @param string $cc 抄送地址
+	 * @return boolean
+	 */
 	public function setCc($cc) {
-		if(isset($this->_cc)) {
-			if(is_string($this->_cc)) {
-				$this->_cc = array($this->_cc);
+		if (isset($this->_cc)) {
+			if (is_string($this->_cc)) {
+				$this->_cc   = [$this->_cc];
 				$this->_cc[] = $cc;
 				return true;
-			}
-			elseif(is_array($this->_cc)) {
+			} elseif (is_array($this->_cc)) {
 				$this->_cc[] = $cc;
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
-		}
-		else {
+		} else {
 			$this->_cc = $cc;
 			return true;
 		}
 	}
 
 	/**
-	* 设置秘密抄送，多个秘密抄送，调用多次
-	* @access public
-	* @param string $bcc 秘密抄送地址
-	* @return boolean
-	*/
+	 * 设置秘密抄送，多个秘密抄送，调用多次
+	 * @access public
+	 * @param string $bcc 秘密抄送地址
+	 * @return boolean
+	 */
 	public function setBcc($bcc) {
-		if(isset($this->_bcc)) {
-			if(is_string($this->_bcc)) {
-				$this->_bcc = array($this->_bcc);
+		if (isset($this->_bcc)) {
+			if (is_string($this->_bcc)) {
+				$this->_bcc   = [$this->_bcc];
 				$this->_bcc[] = $bcc;
 				return true;
-			}
-			elseif(is_array($this->_bcc)) {
+			} elseif (is_array($this->_bcc)) {
 				$this->_bcc[] = $bcc;
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
-		}
-		else {
+		} else {
 			$this->_bcc = $bcc;
 			return true;
 		}
 	}
 
 	/**
-	* 设置邮件附件，多个附件，调用多次
-	* @access public
-	* @param string $file 文件地址
-	* @return boolean
-	*/
+	 * 设置邮件附件，多个附件，调用多次
+	 * @access public
+	 * @param string $file 文件地址
+	 * @return boolean
+	 */
 	public function addAttachment($file) {
-		if(!file_exists($file)) {
+		if (!file_exists($file)) {
 			$this->_errorMessage = "file " . $file . " does not exist.";
 			return false;
 		}
-		if(isset($this->_attachment)) {
-			if(is_string($this->_attachment)) {
-				$this->_attachment = array($this->_attachment);
+		if (isset($this->_attachment)) {
+			if (is_string($this->_attachment)) {
+				$this->_attachment   = [$this->_attachment];
 				$this->_attachment[] = $file;
 				return true;
-			}
-			elseif(is_array($this->_attachment)) {
+			} elseif (is_array($this->_attachment)) {
 				$this->_attachment[] = $file;
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
-		}
-		else {
+		} else {
 			$this->_attachment = $file;
 			return true;
 		}
 	}
 
 	/**
-	* 设置邮件信息
-	* @access public
-	* @param string $body 邮件主题
-	* @param string $subject 邮件主体内容，可以是纯文本，也可是是HTML文本
-	* @return boolean
-	*/
+	 * 设置邮件信息
+	 * @access public
+	 * @param string $body 邮件主题
+	 * @param string $subject 邮件主体内容，可以是纯文本，也可是是HTML文本
+	 * @return boolean
+	 */
 	public function setMail($subject, $body) {
 		$this->_subject = $subject;
-		$this->_body = base64_encode($body);
+		$this->_body    = base64_encode($body);
 		return true;
 	}
 
 	/**
-	* 发送邮件
-	* @access public
-	* @return boolean
-	*/
+	 * 发送邮件
+	 * @access public
+	 * @return boolean
+	 */
 	public function sendMail() {
 		$command = $this->getCommand();
 
@@ -251,10 +239,9 @@ class MySendMail {
 
 		foreach ($command as $value) {
 			$result = $this->_isSecurity ? $this->sendCommandSecurity($value[0], $value[1]) : $this->sendCommand($value[0], $value[1]);
-			if($result) {
+			if ($result) {
 				continue;
-			}
-			else{
+			} else {
 				return false;
 			}
 		}
@@ -265,115 +252,104 @@ class MySendMail {
 	}
 
 	/**
-	* 返回错误信息
-	* @return string
-	*/
-	public function error(){
-		if(!isset($this->_errorMessage)) {
+	 * 返回错误信息
+	 * @return string
+	 */
+	public function error() {
+		if (!isset($this->_errorMessage)) {
 			$this->_errorMessage = "";
 		}
 		return $this->_errorMessage;
 	}
 
 	/**
-	* 返回mail命令
-	* @access protected
-	* @return array
-	*/
+	 * 返回mail命令
+	 * @access protected
+	 * @return array
+	 */
 	protected function getCommand() {
 		$separator = "----=_Part_" . md5($this->_from . time()) . uniqid(); //分隔符
 
-		$command = array(
-				array("HELO sendmail\r\n", 250)
-			);
-		if(!empty($this->_userName)){
-			$command[] = array("AUTH LOGIN\r\n", 334);
-			$command[] = array($this->_userName . "\r\n", 334);
-			$command[] = array($this->_password . "\r\n", 235);
+		$command = [
+			["HELO sendmail\r\n", 250],
+		];
+		if (!empty($this->_userName)) {
+			$command[] = ["AUTH LOGIN\r\n", 334];
+			$command[] = [$this->_userName . "\r\n", 334];
+			$command[] = [$this->_password . "\r\n", 235];
 		}
 
 		//设置发件人
-		$command[] = array("MAIL FROM: <" . $this->_from . ">\r\n", 250);
-		$header = "FROM: <" . $this->_from . ">\r\n";
+		$command[] = ["MAIL FROM: <" . $this->_from . ">\r\n", 250];
+		$header    = "FROM: <" . $this->_from . ">\r\n";
 
 		//设置收件人
-		if(is_array($this->_to)) {
+		if (is_array($this->_to)) {
 			$count = count($this->_to);
-			for($i=0; $i<$count; $i++){
-				$command[] = array("RCPT TO: <" . $this->_to[$i] . ">\r\n", 250);
-				if($i == 0){
-					$header .= "TO: <" . $this->_to[$i] .">";
-				}
-				elseif($i + 1 == $count){
-					$header .= ",<" . $this->_to[$i] .">\r\n";
-				}
-				else{
-					$header .= ",<" . $this->_to[$i] .">";
+			for ($i = 0; $i < $count; $i++) {
+				$command[] = ["RCPT TO: <" . $this->_to[$i] . ">\r\n", 250];
+				if ($i == 0) {
+					$header .= "TO: <" . $this->_to[$i] . ">";
+				} elseif ($i + 1 == $count) {
+					$header .= ",<" . $this->_to[$i] . ">\r\n";
+				} else {
+					$header .= ",<" . $this->_to[$i] . ">";
 				}
 			}
-		}
-		else{
-			$command[] = array("RCPT TO: <" . $this->_to . ">\r\n", 250);
+		} else {
+			$command[] = ["RCPT TO: <" . $this->_to . ">\r\n", 250];
 			$header .= "TO: <" . $this->_to . ">\r\n";
 		}
 
 		//设置抄送
-		if(isset($this->_cc)) {
-			if(is_array($this->_cc)) {
+		if (isset($this->_cc)) {
+			if (is_array($this->_cc)) {
 				$count = count($this->_cc);
-				for($i=0; $i<$count; $i++){
-					$command[] = array("RCPT TO: <" . $this->_cc[$i] . ">\r\n", 250);
-					if($i == 0){
-					$header .= "CC: <" . $this->_cc[$i] .">";
-					}
-					elseif($i + 1 == $count){
-						$header .= ",<" . $this->_cc[$i] .">\r\n";
-					}
-					else{
-						$header .= ",<" . $this->_cc[$i] .">";
+				for ($i = 0; $i < $count; $i++) {
+					$command[] = ["RCPT TO: <" . $this->_cc[$i] . ">\r\n", 250];
+					if ($i == 0) {
+						$header .= "CC: <" . $this->_cc[$i] . ">";
+					} elseif ($i + 1 == $count) {
+						$header .= ",<" . $this->_cc[$i] . ">\r\n";
+					} else {
+						$header .= ",<" . $this->_cc[$i] . ">";
 					}
 				}
-			}
-			else{
-				$command[] = array("RCPT TO: <" . $this->_cc . ">\r\n", 250);
+			} else {
+				$command[] = ["RCPT TO: <" . $this->_cc . ">\r\n", 250];
 				$header .= "CC: <" . $this->_cc . ">\r\n";
 			}
 		}
 
 		//设置秘密抄送
-		if(isset($this->_bcc)) {
-			if(is_array($this->_bcc)) {
+		if (isset($this->_bcc)) {
+			if (is_array($this->_bcc)) {
 				$count = count($this->_bcc);
-				for($i=0; $i<$count; $i++){
-					$command[] = array("RCPT TO: <" . $this->_bcc[$i] . ">\r\n", 250);
-					if($i == 0){
-					$header .= "BCC: <" . $this->_bcc[$i] .">";
-					}
-					elseif($i + 1 == $count){
-						$header .= ",<" . $this->_bcc[$i] .">\r\n";
-					}
-					else{
-						$header .= ",<" . $this->_bcc[$i] .">";
+				for ($i = 0; $i < $count; $i++) {
+					$command[] = ["RCPT TO: <" . $this->_bcc[$i] . ">\r\n", 250];
+					if ($i == 0) {
+						$header .= "BCC: <" . $this->_bcc[$i] . ">";
+					} elseif ($i + 1 == $count) {
+						$header .= ",<" . $this->_bcc[$i] . ">\r\n";
+					} else {
+						$header .= ",<" . $this->_bcc[$i] . ">";
 					}
 				}
-			}
-			else{
-				$command[] = array("RCPT TO: <" . $this->_bcc . ">\r\n", 250);
+			} else {
+				$command[] = ["RCPT TO: <" . $this->_bcc . ">\r\n", 250];
 				$header .= "BCC: <" . $this->_bcc . ">\r\n";
 			}
 		}
 
 		//主题
-		$header .= "Subject: " . $this->_subject ."\r\n";
-		if(isset($this->_attachment)) {
+		$header .= "Subject: " . $this->_subject . "\r\n";
+		if (isset($this->_attachment)) {
 			//含有附件的邮件头需要声明成这个
 			$header .= "Content-Type: multipart/mixed;\r\n";
-		}
-		elseif(false){
+		} elseif (false) {
 			//邮件体含有图片资源的需要声明成这个
 			$header .= "Content-Type: multipart/related;\r\n";
-		}
-		else{
+		} else {
 			//html或者纯文本的邮件声明成这个
 			$header .= "Content-Type: multipart/alternative;\r\n";
 		}
@@ -388,10 +364,10 @@ class MySendMail {
 		$header .= "--" . $separator . "\r\n";
 
 		//加入附件
-		if(isset($this->_attachment) && !empty($this->_attachment)){
-			if(is_array($this->_attachment)){
+		if (isset($this->_attachment) && !empty($this->_attachment)) {
+			if (is_array($this->_attachment)) {
 				$count = count($this->_attachment);
-				for($i=0; $i<$count; $i++){
+				for ($i = 0; $i < $count; $i++) {
 					$header .= "\r\n--" . $separator . "\r\n";
 					$header .= "Content-Type: " . $this->getMIMEType($this->_attachment[$i]) . '; name="' . basename($this->_attachment[$i]) . '"' . "\r\n";
 					$header .= "Content-Transfer-Encoding: base64\r\n";
@@ -400,8 +376,7 @@ class MySendMail {
 					$header .= $this->readFile($this->_attachment[$i]);
 					$header .= "\r\n--" . $separator . "\r\n";
 				}
-			}
-			else{
+			} else {
 				$header .= "\r\n--" . $separator . "\r\n";
 				$header .= "Content-Type: " . $this->getMIMEType($this->_attachment) . '; name="' . basename($this->_attachment) . '"' . "\r\n";
 				$header .= "Content-Transfer-Encoding: base64\r\n";
@@ -415,28 +390,28 @@ class MySendMail {
 		//结束邮件数据发送
 		$header .= "\r\n.\r\n";
 
-		$command[] = array("DATA\r\n", 354);
-		$command[] = array($header, 250);
-		$command[] = array("QUIT\r\n", 221);
+		$command[] = ["DATA\r\n", 354];
+		$command[] = [$header, 250];
+		$command[] = ["QUIT\r\n", 221];
 
 		return $command;
 	}
 
 	/**
-	* 发送命令
-	* @access protected
-	* @param string $command 发送到服务器的smtp命令
-	* @param int $code 期望服务器返回的响应吗
-	* @return boolean
-	*/
+	 * 发送命令
+	 * @access protected
+	 * @param string $command 发送到服务器的smtp命令
+	 * @param int $code 期望服务器返回的响应吗
+	 * @return boolean
+	 */
 	protected function sendCommand($command, $code) {
 		echo 'Send command:' . $command . ',expected code:' . $code . '<br />';
 		//发送命令给服务器
-		try{
-			if(socket_write($this->_socket, $command, strlen($command))){
+		try {
+			if (socket_write($this->_socket, $command, strlen($command))) {
 
 				//当邮件内容分多次发送时，没有$code，服务器没有返回
-				if(empty($code))  {
+				if (empty($code)) {
 					return true;
 				}
 
@@ -444,136 +419,128 @@ class MySendMail {
 				$data = trim(socket_read($this->_socket, 1024));
 				echo 'response:' . $data . '<br /><br />';
 
-				if($data) {
-					$pattern = "/^".$code."/";
-					if(preg_match($pattern, $data)) {
+				if ($data) {
+					$pattern = "/^" . $code . "/";
+					if (preg_match($pattern, $data)) {
 						return true;
-					}
-					else{
+					} else {
 						$this->_errorMessage = "Error:" . $data . "|**| command:";
 						return false;
 					}
-				}
-				else{
+				} else {
 					$this->_errorMessage = "Error:" . socket_strerror(socket_last_error());
 					return false;
 				}
-			}
-			else{
+			} else {
 				$this->_errorMessage = "Error:" . socket_strerror(socket_last_error());
 				return false;
 			}
-		}catch(Exception $e) {
+		} catch (Exception $e) {
 			$this->_errorMessage = "Error:" . $e->getMessage();
 		}
 	}
 
 	/**
-	* 发送命令
-	* @access protected
-	* @param string $command 发送到服务器的smtp命令
-	* @param int $code 期望服务器返回的响应吗
-	* @return boolean
-	*/
+	 * 发送命令
+	 * @access protected
+	 * @param string $command 发送到服务器的smtp命令
+	 * @param int $code 期望服务器返回的响应吗
+	 * @return boolean
+	 */
 	protected function sendCommandSecurity($command, $code) {
 		echo 'Send command:' . $command . ',expected code:' . $code . '<br />';
 		try {
-			if(fwrite($this->_socket, $command)){
+			if (fwrite($this->_socket, $command)) {
 				//当邮件内容分多次发送时，没有$code，服务器没有返回
-				if(empty($code))  {
+				if (empty($code)) {
 					return true;
 				}
 				//读取服务器返回
 				$data = trim(fread($this->_socket, 1024));
 				echo 'response:' . $data . '<br /><br />';
 
-				if($data) {
-					$pattern = "/^".$code."/";
-					if(preg_match($pattern, $data)) {
+				if ($data) {
+					$pattern = "/^" . $code . "/";
+					if (preg_match($pattern, $data)) {
 						return true;
-					}
-					else{
+					} else {
 						$this->_errorMessage = "Error:" . $data . "|**| command:";
 						return false;
 					}
-				}
-				else{
+				} else {
 					return false;
 				}
-			}
-			else{
+			} else {
 				$this->_errorMessage = "Error: " . $command . " send failed";
 				return false;
 			}
-		}catch(Exception $e) {
+		} catch (Exception $e) {
 			$this->_errorMessage = "Error:" . $e->getMessage();
 		}
-	} 
+	}
 
 	/**
-	* 读取附件文件内容，返回base64编码后的文件内容
-	* @access protected
-	* @param string $file 文件
-	* @return mixed
-	*/
+	 * 读取附件文件内容，返回base64编码后的文件内容
+	 * @access protected
+	 * @param string $file 文件
+	 * @return mixed
+	 */
 	protected function readFile($file) {
-		if(file_exists($file)) {
+		if (file_exists($file)) {
 			$file_obj = file_get_contents($file);
 			return base64_encode($file_obj);
-		}
-		else {
+		} else {
 			$this->_errorMessage = "file " . $file . " dose not exist";
 			return false;
 		}
 	}
 
-	public function mime_content_type($f){
-       return trim(exec('file -bi '. escapeshellarg($f))) ;
-    }
-	
+	public function mime_content_type($f) {
+		return trim(exec('file -bi ' . escapeshellarg($f)));
+	}
+
 	/**
-	* 获取附件MIME类型
-	* @access protected
-	* @param string $file 文件
-	* @return mixed
-	*/
+	 * 获取附件MIME类型
+	 * @access protected
+	 * @param string $file 文件
+	 * @return mixed
+	 */
 	protected function getMIMEType($file) {
-		if(file_exists($file)) {
+		if (file_exists($file)) {
 			//$mime = mime_content_type($file);
-			$mime = trim(exec('file -bi '. escapeshellarg($file)));
-			if(! preg_match("/gif|jpg|png|jpeg/", $mime)){
+			$mime = trim(exec('file -bi ' . escapeshellarg($file)));
+			if (!preg_match("/gif|jpg|png|jpeg/", $mime)) {
 				$mime = "application/octet-stream";
 			}
 			return $mime;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}
 
 	/**
-	* 建立到服务器的网络连接
-	* @access private
-	* @return boolean
-	*/
+	 * 建立到服务器的网络连接
+	 * @access private
+	 * @return boolean
+	 */
 	private function socket() {
 		//创建socket资源
 		$this->_socket = socket_create(AF_INET, SOCK_STREAM, getprotobyname('tcp'));
 
-		if(!$this->_socket) {
+		if (!$this->_socket) {
 			$this->_errorMessage = socket_strerror(socket_last_error());
 			return false;
 		}
 
-		socket_set_block($this->_socket);//设置阻塞模式
+		socket_set_block($this->_socket); //设置阻塞模式
 
 		//连接服务器
-		if(!socket_connect($this->_socket, $this->_sendServer, $this->_port)) {
+		if (!socket_connect($this->_socket, $this->_sendServer, $this->_port)) {
 			$this->_errorMessage = socket_strerror(socket_last_error());
 			return false;
 		}
 		$str = socket_read($this->_socket, 1024);
-		if(!strpos($str, "220")){
+		if (!strpos($str, "220")) {
 			$this->_errorMessage = $str;
 			return fasle;
 		}
@@ -582,14 +549,14 @@ class MySendMail {
 	}
 
 	/**
-	* 建立到服务器的SSL网络连接
-	* @access private
-	* @return boolean
-	*/
+	 * 建立到服务器的SSL网络连接
+	 * @access private
+	 * @return boolean
+	 */
 	private function socketSecurity() {
-		$remoteAddr = "tcp://" . $this->_sendServer . ":" . $this->_port;
+		$remoteAddr    = "tcp://" . $this->_sendServer . ":" . $this->_port;
 		$this->_socket = stream_socket_client($remoteAddr, $errno, $errstr, 30);
-		if(!$this->_socket){
+		if (!$this->_socket) {
 			$this->_errorMessage = $errstr;
 			return false;
 		}
@@ -599,7 +566,7 @@ class MySendMail {
 
 		stream_set_blocking($this->_socket, 1); //设置阻塞模式
 		$str = fread($this->_socket, 1024);
-		if(!strpos($str, "220")){
+		if (!strpos($str, "220")) {
 			$this->_errorMessage = $str;
 			return false;
 		}
@@ -608,12 +575,12 @@ class MySendMail {
 	}
 
 	/**
-	* 关闭socket
-	* @access private
-	* @return boolean
-	*/
+	 * 关闭socket
+	 * @access private
+	 * @return boolean
+	 */
 	private function close() {
-		if(isset($this->_socket) && is_object($this->_socket)) {
+		if (isset($this->_socket) && is_object($this->_socket)) {
 			$this->_socket->close();
 			return true;
 		}
@@ -622,12 +589,12 @@ class MySendMail {
 	}
 
 	/**
-	* 关闭安全socket
-	* @access private
-	* @return boolean
-	*/
+	 * 关闭安全socket
+	 * @access private
+	 * @return boolean
+	 */
 	private function closeSecutity() {
-		if(isset($this->_socket) && is_object($this->_socket)) {
+		if (isset($this->_socket) && is_object($this->_socket)) {
 			stream_socket_shutdown($this->_socket, STREAM_SHUT_WR);
 			return true;
 		}
