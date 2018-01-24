@@ -2,7 +2,7 @@ npm install -g node-gyp
 npm install -g socket.io  #mac下面报错时加sudo 
 npm install -g nodeppt
 如果是html的的话：http://127.0.0.1:8080/index.html
-如果是mrakdown的话：http://127.0.0.1:8080/md/index.md
+如果是markdown的话：http://127.0.0.1:8080/md/index.md
 
 
 

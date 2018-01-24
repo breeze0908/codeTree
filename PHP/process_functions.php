@@ -66,4 +66,52 @@ function get_process_grep_shell($type = 1) {
 		return "ps aux | {$basic_grep_str} | grep -v grep | awk '{print $2}' | grep -v $cur_pid | xargs kill -9";
 	}
 }
-?>
+
+/**
+Method to execute a command in the terminal
+Uses :
+1. system
+2. passthru
+3. exec
+4. shell_exec
+ */
+function terminal($command) {
+	//system
+	if (function_exists('system')) {
+		ob_start();
+		system($command, $return_var);
+		$output = ob_get_contents();
+		ob_end_clean();
+	} else if (function_exists('passthru')) {
+		//passthru
+		ob_start();
+		passthru($command, $return_var);
+		$output = ob_get_contents();
+		ob_end_clean();
+	} else if (function_exists('exec')) {
+		//exec
+		exec($command, $output, $return_var);
+		$output = implode("", $output);
+	} else if (function_exists('shell_exec')) {
+		//shell_exec
+		$output = shell_exec($command);
+	} else {
+		$output     = 'Command execution not possible on this system';
+		$return_var = 1;
+	}
+	return ['output' => $output, 'status' => $return_var];
+}
+
+
+
+/**
+ * 计算内存使用
+ *
+ * @return
+ */
+function cal_memory_get_usage() {
+	$size = memory_get_usage(true);
+	$unit = array('b ', 'kb', 'mb', 'gb', 'tb', 'pb');
+	$i    = floor(log($size, 1024));
+	return sprintf("%02f", @round($size / pow(1024, $i, 2))) . ' ' . $unit[$i];
+}

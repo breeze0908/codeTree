@@ -1,0 +1,32 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title></title>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://resources/js/i18n_template2.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+(function(){
+ //清除DNS
+ if(chrome) {
+      //clear-dns-cache
+      document.write("<p>1. 正在清理DNS缓存.....</p>");
+      chrome.send('clearHostResolverCache');
+
+      //flush-brower-cache
+      document.write("<p>2. 正在清理浏览器缓存.....</p>");
+      chrome.send('clearBrowserCache');
+
+      //flush-sockets
+      document.write("<p>2. 正在刷新Socket缓存.....</p>");
+      chrome.send('flushSocketPools');
+
+      document.write("<p>清除DNS缓存完成</p>");
+ }
+})();
+</script>
+</body>
+</html>

@@ -65,11 +65,27 @@ function array_except($array, $keys) {
  * @return array
  */
 function array_plunk($array, $field) {
-	$tmp_array = [];
-	foreach ($array as $key => $arr) {
-		is_array($arr) && isset($arr[$field]) && $tmp_array[] = $arr[$field];
-	}
-	return $tmp_array;
+    $results = [];
+    if (is_array($array)) {
+        foreach ($array as $key => $item) {
+            is_array($item) && isset($item[$field]) && $results[] = $item[$field];
+        }
+    }
+    return $results;
+}
+
+/**
+ * 检查id是否存在于数组中
+ *
+ * @param string|integer|array $id
+ * @param array $ids
+ * @param string $delimiter
+ */
+function array_exists($value, $array) {
+    if (!is_array($array)) {
+        return false;
+    }
+    return is_array($value) ? ($value == array_intersect($value, $array)) : in_array($value, $array);
 }
 
 /* 通过回调函数过滤数组
@@ -88,4 +104,40 @@ function array_where($array, $callback) {
 	}
 
 	return $filtered;
+}
+
+/**
+ * 数组深度(维度)
+ *
+ * @param  array  $array 数组
+ * @return integer
+ */
+function array_depth($array) {
+	if (!is_array($array)) {
+		return 0;
+	}
+
+	$max_depth = 1;
+	foreach ($array as $value) {
+		if (is_array($value)) {
+			$depth     = call_user_func(__FUNCTION__, $value) + 1;
+			$max_depth = $depth > $max_depth ? $depth : $max_depth;
+		}
+	}
+	return $max_depth;
+}
+
+/**
+ * 判断数组是不是多维数组
+ *
+ * @param  array   $array 数组
+ * @return boolean
+ */
+function is_multi_dimension($array) {
+	//COUNT_RECURSIVE或者1 表示将递归地对数组计数
+	if (count($array) == count($array, 1)) {
+		return true;
+	} else {
+		return false;
+	}
 }
