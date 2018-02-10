@@ -23,6 +23,8 @@ function exit_process_if_has_exist() {
 	$basic_cmd = basename(__FILE__);
 	$output    = [];
 	exec("ps aux | grep 'php {$basic_cmd}' | grep -v grep | grep -v $cur_pid", $output);
+	//在laravel中需要排除 grep -v 'sh -c'
+	//exec("ps aux | grep 'php {$basic_cmd}' | grep -v grep | grep -v 'sh -c' | grep -v $cur_pid", $output);
 	if (is_array($output) && count($output) > 0) {
 		exit();
 	}
