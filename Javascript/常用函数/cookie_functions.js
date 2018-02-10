@@ -1,3 +1,39 @@
+_.cookie = function(name, value, options) {
+if (typeof value === "undefined") {
+    var n,
+        v,
+        cookies = document.cookie.split(";");
+    for (var i = 0; i < cookies.length; i++) {
+        n = $.trim(cookies[i].substr(0, cookies[i].indexOf("=")));
+        v = cookies[i].substr(cookies[i].indexOf("=") + 1);
+        if (n === name) {
+            return unescape(v);
+        }
+    }
+} else {
+    options = options || {};
+    if (!value) {
+        value = "";
+        options.expires = -365;
+    } else {
+        value = escape(value);
+    }
+    if (options.expires) {
+        var d = new Date();
+        d.setDate(d.getDate() + options.expires);
+        value += "; expires=" + d.toUTCString();
+    }
+    if (options.domain) {
+        value += "; domain=" + options.domain;
+    }
+    if (options.path) {
+        value += "; path=" + options.path;
+    }
+    document.cookie = name + "=" + value;
+}
+};
+
+
 /**
  * cookie处理类
  * @type Object  --注意替换domain
@@ -20,7 +56,7 @@ var Cookie = {
             t = '';
         }
         document.cookie = name + '=' + encodeURIComponent(value) + (t && '; expires=' + t.toUTCString()) +
-            '; domain=' + (opt.domain || '.xx.com') + '; path=' + (opt.path || '/') + (opt.secure ? '; secure' : '');
+        '; domain=' + (opt.domain || '.xx.com') + '; path=' + (opt.path || '/') + (opt.secure ? '; secure' : '');
     },
     get: function(name) {
         name += '=';
@@ -45,7 +81,7 @@ var Cookie = {
  * @param  string value
  * @param  object options
  * @return string
- * 
+ *
  */
 function cookieTool(name, value, options) {
     if (typeof value === 'undefined') {
@@ -94,7 +130,8 @@ function handler(data) {
             }
         }
     }
-};
+}
+;
 var url = 'http://ark.letv.com/s?ark=0&ct=0&n=0&res=jsonp&j=handler&callback=handler';
 var script = document.createElement('script');
 script.setAttribute('src', url);
